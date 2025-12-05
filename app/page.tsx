@@ -200,6 +200,26 @@ export default function Home() {
         overlay.style.opacity = '0.6';
         overlay.style.pointerEvents = 'none';
         backClone.insertBefore(overlay, backClone.firstChild);
+        
+        // Update kosma back content to show all contact info
+        const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
+        if (backContent) {
+          backContent.innerHTML = `
+            <div style="font-size: clamp(16px, 4.6vw, 38px); line-height: 1.1; font-weight: 600; letter-spacing: -1px;">
+              ${cardData.title || "Your Title"}
+            </div>
+            <div style="font-size: clamp(6px, 1.4vw, 12px); line-height: 1.6; color: #1F1F1F;">
+              <p><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
+              <p><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
+              <p><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
+              <p><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+              ${cardData.socials.length > 0 ? `
+                <p><strong>Social Links:</strong></p>
+                ${cardData.socials.map((social) => `<p>${social.platform}: ${social.handle}</p>`).join('')}
+              ` : ''}
+            </div>
+          `;
+        }
       } else if (backFace.classList.contains('techno-back')) {
         backClone.style.background = 'linear-gradient(135deg, var(--end-color), var(--start-color))';
         backClone.style.color = '#FFFFFF';
