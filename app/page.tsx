@@ -1131,13 +1131,13 @@ export default function Home() {
           backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 140, 0, 0.2);
           border-radius: 50%;
-          width: 50px;
-          height: 50px;
+          width: 64px;
+          height: 64px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: #ff8c00;
-          font-size: 24px;
+          font-size: 36px;
           cursor: pointer;
           transition: all 0.3s ease;
           animation: pulseArrow 5s ease-in-out infinite;
@@ -1155,6 +1155,19 @@ export default function Home() {
         .glass-arrow:hover {
           background: rgba(255, 140, 0, 0.3);
           transform: scale(1.1);
+        }
+        
+        /* Auto flip animation: small tilt then full flip then reset */
+        @keyframes autoFlip {
+          0% { transform: rotateY(0deg); }
+          20% { transform: rotateY(20deg); }
+          50% { transform: rotateY(180deg); }
+          70% { transform: rotateY(200deg); }
+          100% { transform: rotateY(360deg); }
+        }
+
+        .kosma-card, .techno-card {
+          animation: autoFlip 4s ease-in-out infinite;
         }
       `}</style>
 
@@ -1280,14 +1293,6 @@ export default function Home() {
           <div className="h-[40vh] flex flex-col justify-center">
 
               <div className="relative flex justify-center">
-                <button 
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 glass-arrow z-10"
-                  onClick={prevStyle}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  aria-label="Previous style"
-                >
-                  ‹
-                </button>
                 <div
                   onTouchStart={(e) => setStartX(e.touches[0].clientX)}
                   onTouchEnd={(e) => {
@@ -1313,7 +1318,25 @@ export default function Home() {
                   }}
                 >
                   {cardStyle === "techno" ? (
-                    <div className="techno-card-wrapper" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
+                    <div className="techno-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
+                      <button
+                        onClick={prevStyle}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        aria-label="Previous style"
+                        style={{ position: 'absolute', left: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
+                        className="glass-arrow"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        onClick={nextStyle}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        aria-label="Next style"
+                        style={{ position: 'absolute', right: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
+                        className="glass-arrow"
+                      >
+                        ›
+                      </button>
                     <div className="techno-card">
                       <div className="techno-card-face techno-front">
                         <div className="top-label">{cardData.company || "Your Company"}</div>
@@ -1364,7 +1387,25 @@ export default function Home() {
                     </div>
                   </div>
                 ) : (
-                    <div className="kosma-card-wrapper" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
+                    <div className="kosma-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
+                      <button
+                        onClick={prevStyle}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        aria-label="Previous style"
+                        style={{ position: 'absolute', left: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
+                        className="glass-arrow"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        onClick={nextStyle}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        aria-label="Next style"
+                        style={{ position: 'absolute', right: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
+                        className="glass-arrow"
+                      >
+                        ›
+                      </button>
                     <div className="kosma-card">
                       <div className="kosma-card-face kosma-front">
                         <div className="kosma-front-content">
@@ -1419,14 +1460,6 @@ export default function Home() {
                   </div>
                 )}
                 </div>
-                <button 
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 glass-arrow z-10"
-                  onClick={nextStyle}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  aria-label="Next style"
-                >
-                  ›
-                </button>
               </div>
             </div>
           </div>
