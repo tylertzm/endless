@@ -151,6 +151,12 @@ export default function Home() {
       frontClone.style.height = '600px';
       frontClone.style.margin = '0';
       frontClone.style.overflow = 'hidden';
+      frontClone.style.padding = '35px';
+      frontClone.style.boxSizing = 'border-box';
+      frontClone.style.display = 'flex';
+      frontClone.style.flexDirection = 'column';
+      frontClone.style.justifyContent = 'space-between';
+      frontClone.style.fontFamily = 'monospace';
 
       // Ensure Kosma card colors are preserved
       if (frontFace.classList.contains('kosma-front')) {
@@ -165,6 +171,17 @@ export default function Home() {
           kElement.style.color = 'transparent';
           kElement.style.opacity = '0.6';
           kElement.style.filter = 'drop-shadow(0 0 1px rgba(255,255,255,0.1))';
+          kElement.style.fontSize = '140px';
+        }
+        // Style front content container
+        const frontContent = frontClone.querySelector('.kosma-front-content') as HTMLElement;
+        if (frontContent) {
+          frontContent.style.position = 'relative';
+          frontContent.style.zIndex = '1';
+          frontContent.style.height = '100%';
+          frontContent.style.display = 'flex';
+          frontContent.style.flexDirection = 'column';
+          frontContent.style.justifyContent = 'space-between';
         }
       } else if (frontFace.classList.contains('techno-front')) {
         frontClone.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
@@ -182,6 +199,12 @@ export default function Home() {
       backClone.style.height = '600px';
       backClone.style.margin = '0';
       backClone.style.overflow = 'hidden';
+      backClone.style.padding = '35px';
+      backClone.style.boxSizing = 'border-box';
+      backClone.style.display = 'flex';
+      backClone.style.flexDirection = 'column';
+      backClone.style.justifyContent = 'space-between';
+      backClone.style.fontFamily = 'monospace';
 
       // Ensure back card colors are preserved
       if (backFace.classList.contains('kosma-back')) {
@@ -204,6 +227,8 @@ export default function Home() {
         // Update kosma back content to show all contact info
         const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
         if (backContent) {
+          backContent.style.position = 'relative';
+          backContent.style.zIndex = '1';
           backContent.innerHTML = `
             <div style="font-size: 32px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word;">
               ${cardData.title || "Your Title"}
@@ -226,6 +251,11 @@ export default function Home() {
         // Update techno back content
         const backContent = backClone.querySelector('.center-content') as HTMLElement;
         if (backContent) {
+          backContent.style.textAlign = 'center';
+          backContent.style.flexGrow = '1';
+          backContent.style.display = 'flex';
+          backContent.style.flexDirection = 'column';
+          backContent.style.justifyContent = 'center';
           backContent.innerHTML = `
             <h2 style="font-size: 28px; margin-bottom: 16px; font-weight: 600;">Contact Information</h2>
             <div style="font-family: 'Space Mono', monospace; font-size: 13px; line-height: 1.8;">
