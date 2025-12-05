@@ -1394,14 +1394,22 @@ export default function Home() {
                       <div className="kosma-card-face kosma-back">
                         <div className="kosma-back-content">
                           <div className="kosma-headline-large">
-                            Let&apos;s Explore<br />
-                            and Design<br />
-                            Your Vision
+                            {cardData.title || "Your Title"}
                           </div>
-                          <svg className="kosma-signature" viewBox="0 0 200 60" fill="none" stroke="#000" strokeWidth="2">
-                            <path d="M10,40 Q30,10 50,40 T90,30 T130,50 T160,20" strokeOpacity="0.8" />
-                            <path d="M40,50 L60,10" strokeWidth="1.5" />
-                          </svg>
+                          <div style={{ fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#1F1F1F' }}>
+                            <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
+                            <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
+                            <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
+                            <p><strong>Address:</strong> {cardData.address || "Not provided"}</p>
+                            {cardData.socials.length > 0 && (
+                              <div>
+                                <p><strong>Social Links:</strong></p>
+                                {cardData.socials.map((social, i) => (
+                                  <p key={i}>{social.platform}: {social.handle}</p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           <div className="kosma-info-grid">
                             <div className="kosma-palette-pill">
                               <div className="kosma-swatch kosma-s1"></div>
@@ -1411,8 +1419,7 @@ export default function Home() {
                             </div>
                             <div className="kosma-contact-details">
                               <strong>{cardData.name || "Your Name"}</strong>
-                              {cardData.email || "your@email.com"}<br />
-                              {cardData.website || "www.yoursite.com"}
+                              {cardData.company || "Your Company"}
                             </div>
                           </div>
                         </div>
