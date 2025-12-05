@@ -57,6 +57,8 @@ export default function Home() {
   const [gradientStart, setGradientStart] = useState("#3b82f6");
   const [gradientEnd, setGradientEnd] = useState("#1e40af");
   const [startX, setStartX] = useState<number | null>(null);
+  const [platformPopup, setPlatformPopup] = useState<{ platform: string | null; platformName?: string; handle: string } | null>(null);
+  const [steps] = useState<string[]>(STEP_KEYS);
 
   const cardStyle = styles[styleIndex];
 
@@ -205,9 +207,9 @@ export default function Home() {
 
       // Ensure back card colors are preserved
       if (backFace.classList.contains('kosma-back')) {
-        backClone.style.backgroundColor = '#EAEAEA';
-        backClone.style.color = '#050505';
-        // Add the radial gradient overlay
+        backClone.style.backgroundColor = '#050505';
+        backClone.style.color = '#FFFFFF';
+        // Add the subtle radial gradient overlay
         backClone.style.position = 'relative';
         const overlay = document.createElement('div');
         overlay.style.content = '';
@@ -216,28 +218,27 @@ export default function Home() {
         overlay.style.left = '-50%';
         overlay.style.width = '200%';
         overlay.style.height = '200%';
-        overlay.style.background = 'radial-gradient(circle at center, #ffffff 0%, transparent 60%)';
-        overlay.style.opacity = '0.6';
+        overlay.style.background = 'radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, transparent 60%)';
         overlay.style.pointerEvents = 'none';
         backClone.insertBefore(overlay, backClone.firstChild);
         
-        // Update kosma back content to show all contact info
+        // Update kosma back content to show all contact info (light text on dark bg)
         const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
         if (backContent) {
           backContent.style.position = 'relative';
           backContent.style.zIndex = '1';
           backContent.innerHTML = `
-            <div style="font-size: 86px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word;">
+            <div style="font-size: 86px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word; color: #FFFFFF;">
               ${cardData.title || "Your Title"}
             </div>
-            <div style="font-size: 34px; line-height: 1.8; color: #1F1F1F; margin-top: 8px;">
-              <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+            <div style="font-size: 34px; line-height: 1.8; color: #FFFFFF; margin-top: 8px;">
+              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Phone:</strong> ${cardData.phone || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Email:</strong> ${cardData.email || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Website:</strong> ${cardData.website || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Address:</strong> ${cardData.address || "Not provided"}</p>
               ${cardData.socials.length > 0 ? `
-                <p style="margin: 8px 0 4px 0;"><strong>Social Links:</strong></p>
-                ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 32px;">${social.platform}: ${social.handle}</p>`).join('')}
+                <p style="margin: 8px 0 4px 0; color: #FFFFFF;"><strong>Social Links:</strong></p>
+                ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 32px; color: #FFFFFF;">${social.platform}: ${social.handle}</p>`).join('')}
               ` : ''}
             </div>
           `;
@@ -407,7 +408,7 @@ export default function Home() {
     }
   };
 
-  const totalSteps = STEP_KEYS.length;
+  const totalSteps = steps.length;
 
   const goNext = () => {
     setCurrentStep(s => Math.min(s + 1, totalSteps - 1));
@@ -417,10 +418,7 @@ export default function Home() {
     setCurrentStep(s => Math.max(s - 1, 0));
   };
 
-  const addSocial = (platform = 'Instagram', handle = '', label = '') => {
-    const autoLabel = label || platform;
-    setCardData(prev => ({ ...prev, socials: [...prev.socials, { platform, handle, label: autoLabel }] }));
-  };
+  
 
   const updateSocial = (index: number, key: keyof SocialLink, value: string) => {
     const newSocials = [...cardData.socials];
@@ -436,6 +434,8 @@ export default function Home() {
     const newSocials = cardData.socials.filter((_, i) => i !== index);
     setCardData(prev => ({ ...prev, socials: newSocials }));
   };
+
+  // handleAddPlatform removed: platform chips now open a popup directly
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -651,21 +651,21 @@ export default function Home() {
         }
         
         /* Custom scrollbar */
-        .h-\\[30vh\\]::-webkit-scrollbar {
+        .scrollable-form::-webkit-scrollbar {
           width: 8px;
         }
         
-        .h-\\[30vh\\]::-webkit-scrollbar-track {
+        .scrollable-form::-webkit-scrollbar-track {
           background: rgba(0, 0, 0, 0.2);
           border-radius: 4px;
         }
         
-        .h-\\[30vh\\]::-webkit-scrollbar-thumb {
+        .scrollable-form::-webkit-scrollbar-thumb {
           background: rgba(255, 140, 0, 0.6);
           border-radius: 4px;
         }
         
-        .h-\\[30vh\\]::-webkit-scrollbar-thumb:hover {
+        .scrollable-form::-webkit-scrollbar-thumb:hover {
           background: rgba(255, 140, 0, 0.8);
         }
         
@@ -990,8 +990,8 @@ export default function Home() {
         }
 
         .kosma-back {
-          background-color: #EAEAEA;
-          color: #050505;
+          background-color: #050505;
+          color: #FFFFFF;
           transform: rotateY(180deg);
         }
 
@@ -999,8 +999,8 @@ export default function Home() {
           content: '';
           position: absolute;
           top: -50%; left: -50%; width: 200%; height: 200%;
-          background: radial-gradient(circle at center, #ffffff 0%, transparent 60%);
-          opacity: 0.6;
+          background: radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, transparent 60%);
+          opacity: 1;
         }
 
         .kosma-back-content {
@@ -1173,21 +1173,26 @@ export default function Home() {
 
       <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
         
-        <div className="flex justify-start h-[20vh] items-center">
-          <img src="/endless.webp?v=2" alt="Endless Logo" className="w-24 h-auto sm:w-32 md:w-36 lg:w-40" />
+        <div className="flex justify-start h-[20vh] items-center gap-4">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src="/endless.webp?v=2" alt="Endless Logo" className="w-24 h-auto sm:w-32 md:w-36 lg:w-40" />
+          </div>
+          <div style={{ flex: 1, maxWidth: '60%' }}>
+            <div className="progress" aria-hidden>
+              <i style={{ width: `${(currentStep / Math.max(totalSteps - 1, 1)) * 100}%` }} />
+            </div>
+          </div>
         </div>
         
         {/* Questions / Form area - 30% height */}
-        <div className="h-[30vh] overflow-y-auto">
-            <div className="question-card h-full">
-              <div className="progress" aria-hidden>
-                <i style={{ width: `${(currentStep / (totalSteps - 1)) * 100}%` }} />
-              </div>
+        <div className="scrollable-form min-h-[20vh] overflow-y-auto">
+          <div className="question-card">
+                {/* old in-card progress removed — header progress bar is used instead */}
 
-              {STEP_KEYS[currentStep] !== 'socials' && STEP_KEYS[currentStep] !== 'preview' && STEP_KEYS[currentStep] !== 'photo' && (
+              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && steps[currentStep] !== 'photo' && (
                 <div>
                   <h1 className="text-2xl font-bold mb-3">{(() => {
-                    const k = STEP_KEYS[currentStep];
+                    const k = steps[currentStep];
                     switch(k) {
                       case 'name': return 'What is your full name?';
                       case 'title': return "What's your role/title?";
@@ -1202,9 +1207,9 @@ export default function Home() {
                   <div className="large-input-wrapper">
                     <input
                       className="large-input"
-                      value={cardData[STEP_KEYS[currentStep] as keyof CardData] as string}
-                      onChange={(e) => handleInputChange(STEP_KEYS[currentStep] as keyof CardData, e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && STEP_KEYS[currentStep] !== 'preview') goNext(); }}
+                      value={(cardData[steps[currentStep] as keyof CardData] as string) || ''}
+                      onChange={(e) => handleInputChange(steps[currentStep] as keyof CardData, e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' && steps[currentStep] !== 'preview') goNext(); }}
                       placeholder="Type here..."
                       autoFocus
                     />
@@ -1212,7 +1217,7 @@ export default function Home() {
                 </div>
               )}
 
-              {STEP_KEYS[currentStep] === 'photo' && (
+              {steps[currentStep] === 'photo' && (
                 <div>
                   <div className="question">Upload a profile photo (optional)</div>
                   <div className="small">Select an image file to include in your contact card.</div>
@@ -1230,46 +1235,102 @@ export default function Home() {
                 </div>
               )}
 
-              {STEP_KEYS[currentStep] === 'socials' && (
+              {steps[currentStep] === 'socials' && (
                 <div>
                   <div className="question">Add social links (optional)</div>
                   <div className="mt-4 space-y-3">
-                    {cardData.socials.length === 0 && (
-                      <div className="text-sm text-gray-300 mb-4">Choose a platform to get started.</div>
-                    )}
-
-                    {cardData.socials.map((social, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm font-semibold text-white">{social.platform}</div>
-                          <button onClick={() => removeSocial(index)} className="btn-back text-xs">Remove</button>
-                        </div>
-                        <input 
-                          className="input" 
-                          value={social.handle} 
-                          onChange={(e) => updateSocial(index, 'handle', e.target.value)} 
-                          placeholder={`Enter your ${social.platform} URL or username`}
-                        />
-                      </div>
-                    ))}
+                    {/* existing socials are represented by chips below; inline inputs removed to avoid duplication */}
+                    
+                    {/* platform selection handled in modal popup */}
 
                     <div className="mt-4">
-                      <div className="flex gap-2 flex-wrap">
-                        <button onClick={() => addSocial('Instagram')} className="btn-next text-sm">Instagram</button>
-                        <button onClick={() => addSocial('LinkedIn')} className="btn-next text-sm">LinkedIn</button>
-                        <button onClick={() => addSocial('X')} className="btn-next text-sm">X</button>
-                        <button onClick={() => addSocial('GitHub')} className="btn-next text-sm">GitHub</button>
-                        <button onClick={() => addSocial('Facebook')} className="btn-next text-sm">Facebook</button>
-                        <button onClick={() => addSocial('TikTok')} className="btn-next text-sm">TikTok</button>
-                        <button onClick={() => addSocial('YouTube')} className="btn-next text-sm">YouTube</button>
-                        <button onClick={() => addSocial('Other')} className="btn-next text-sm">Other</button>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          {cardData.socials.length === 0 ? (
+                            <div className="text-sm text-gray-300 mb-2">Choose a platform to get started.</div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {cardData.socials.map((social, idx) => (
+                                <div key={idx} className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded">
+                                  <span className="text-sm">{social.platform}</span>
+                                  <button onClick={() => removeSocial(idx)} className="btn-back text-xs">×</button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-4">
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
+                            {['Instagram','LinkedIn','X','GitHub','Facebook','TikTok','YouTube','Other'].map((plat) => {
+                              const existing = cardData.socials.find(s => s.platform === plat);
+                              const selected = !!existing;
+                              const label = plat === 'LinkedIn' ? 'in' : plat === 'Instagram' ? 'IG' : plat === 'GitHub' ? 'gh' : plat === 'YouTube' ? 'yt' : plat === 'TikTok' ? 'tt' : plat === 'Facebook' ? 'fb' : plat === 'X' ? 'X' : plat === 'Other' ? '+' : plat;
+                              return (
+                                <div key={plat} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                  <button
+                                    onClick={() => setPlatformPopup({ platform: plat, handle: existing?.handle || '', platformName: plat === 'Other' ? '' : undefined })}
+                                    style={{ padding: '10px', borderRadius: '10px', fontSize: '13px', background: selected ? '#ff8c00' : 'transparent', color: selected ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.06)' }}
+                                    title={plat}
+                                  >
+                                    {label}
+                                  </button>
+                                  {selected && (
+                                    <div style={{ marginTop: '6px', fontSize: '12px', color: '#ccc', maxWidth: '80px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{existing?.handle}</div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {platformPopup && (
+                            <div role="dialog" aria-modal="true" style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 120 }}>
+                              <div style={{ background: 'rgba(10,10,10,0.98)', padding: '18px', borderRadius: '12px', width: 'min(520px, 94%)' }}>
+                                <div style={{ fontWeight: 700, marginBottom: 8 }}>{platformPopup.platform === 'Other' ? 'Add platform' : `Edit ${platformPopup.platform}`}</div>
+                                {platformPopup.platform === 'Other' && (
+                                  <input
+                                    className="input"
+                                    value={platformPopup.platformName || ''}
+                                    onChange={(e) => setPlatformPopup(p => p ? { ...p, platformName: e.target.value } : p)}
+                                    placeholder="Platform name"
+                                  />
+                                )}
+                                <input
+                                  className="input"
+                                  value={platformPopup.handle}
+                                  onChange={(e) => setPlatformPopup(p => p ? { ...p, handle: e.target.value } : p)}
+                                  placeholder="Handle or URL"
+                                  autoFocus
+                                />
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+                                  <button onClick={() => {
+                                    const plat = platformPopup.platform === 'Other' ? (platformPopup.platformName || 'Other') : (platformPopup.platform || 'Other');
+                                    const handle = (platformPopup.handle || '').trim();
+                                    setCardData(prev => {
+                                      const others = prev.socials.filter(s => s.platform !== plat);
+                                      if (handle.length > 0) return { ...prev, socials: [...others, { platform: plat, handle, label: plat }] };
+                                      return { ...prev, socials: others };
+                                    });
+                                    setPlatformPopup(null);
+                                  }} className="btn-next">Save</button>
+                                  <button onClick={() => {
+                                    const plat = platformPopup.platform === 'Other' ? (platformPopup.platformName || 'Other') : (platformPopup.platform || 'Other');
+                                    setCardData(prev => ({ ...prev, socials: prev.socials.filter(s => s.platform !== plat) }));
+                                    setPlatformPopup(null);
+                                  }} className="btn-back">Remove</button>
+                                  <button onClick={() => setPlatformPopup(null)} className="btn-back">Cancel</button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {STEP_KEYS[currentStep] === 'preview' && (
+              {steps[currentStep] === 'preview' && (
                 <div>
                   <div className="question">✨ Done!</div>
                   <div className="small">This is the final preview of your digital business card. Export when ready.</div>
@@ -1282,7 +1343,7 @@ export default function Home() {
 
               <div className="flex items-center gap-5 mt-4">
                 <button onClick={goBack} disabled={currentStep === 0} className="btn-back">Back</button>
-                {STEP_KEYS[currentStep] !== 'preview' ? (
+                {steps[currentStep] !== 'preview' ? (
                   <button onClick={goNext} className="btn-next">Next</button>
                 ) : null}
               </div>
@@ -1428,7 +1489,7 @@ export default function Home() {
                           <div className="kosma-headline-large">
                             {cardData.title || "Your Title"}
                           </div>
-                          <div style={{ fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#1F1F1F' }}>
+                          <div style={{ fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
                             <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
                             <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
                             <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
