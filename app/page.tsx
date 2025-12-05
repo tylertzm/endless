@@ -126,9 +126,9 @@ export default function Home() {
     // Add logo at top
     const logoImg = document.createElement('img');
     logoImg.src = '/endless.webp?v=2';
-    logoImg.style.width = '300px';
+    logoImg.style.width = '250px';
     logoImg.style.height = 'auto';
-    logoImg.style.marginBottom = '30px';
+    logoImg.style.marginBottom = '20px';
     tempDiv.appendChild(logoImg);
 
     // Create front and back cards stacked
@@ -205,10 +205,10 @@ export default function Home() {
         const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
         if (backContent) {
           backContent.innerHTML = `
-            <div style="font-size: clamp(16px, 4.6vw, 38px); line-height: 1.1; font-weight: 600; letter-spacing: -1px;">
+            <div style="font-size: 28px; line-height: 1.1; font-weight: 600; letter-spacing: -1px;">
               ${cardData.title || "Your Title"}
             </div>
-            <div style="font-size: clamp(6px, 1.4vw, 12px); line-height: 1.6; color: #1F1F1F;">
+            <div style="font-size: 12px; line-height: 1.6; color: #1F1F1F;">
               <p><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
               <p><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
               <p><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
@@ -221,11 +221,57 @@ export default function Home() {
           `;
         }
       } else if (backFace.classList.contains('techno-back')) {
-        backClone.style.background = 'linear-gradient(135deg, var(--end-color), var(--start-color))';
+        backClone.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         backClone.style.color = '#FFFFFF';
+        // Update techno back content
+        const backContent = backClone.querySelector('.center-content') as HTMLElement;
+        if (backContent) {
+          backContent.innerHTML = `
+            <h2 style="font-size: 24px; margin-bottom: 20px;">Contact Information</h2>
+            <div style="font-family: 'Space Mono', monospace; font-size: 14px; line-height: 1.6;">
+              <p><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
+              <p><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
+              <p><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
+              <p><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+              ${cardData.socials.length > 0 ? `
+                <div style="margin-top: 12px;">
+                  <strong>Social:</strong>
+                  ${cardData.socials.map((social) => `<p>${social.platform}: ${social.handle}</p>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }
       } else if (backFace.classList.contains('classic-back')) {
         backClone.style.backgroundColor = '#ffffff';
         backClone.style.color = '#000000';
+        // Update classic back content
+        const backContent = backClone.querySelector('.classic-contact-item') as HTMLElement;
+        if (backContent && backContent.parentElement) {
+          const parent = backContent.parentElement;
+          parent.innerHTML = `
+            <div style="font-size: 12px; line-height: 1.6; color: #000000;">
+              <div style="margin-bottom: 8px;">
+                <span style="font-weight: 600;">Phone:</span> ${cardData.phone || "Not provided"}
+              </div>
+              <div style="margin-bottom: 8px;">
+                <span style="font-weight: 600;">Email:</span> ${cardData.email || "Not provided"}
+              </div>
+              <div style="margin-bottom: 8px;">
+                <span style="font-weight: 600;">Website:</span> ${cardData.website || "Not provided"}
+              </div>
+              <div style="margin-bottom: 8px;">
+                <span style="font-weight: 600;">Address:</span> ${cardData.address || "Not provided"}
+              </div>
+              ${cardData.socials.length > 0 ? `
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                  <div style="font-weight: 600; margin-bottom: 8px;">Social Links:</div>
+                  ${cardData.socials.map((social) => `<div style="margin-bottom: 4px;">${social.platform}: ${social.handle}</div>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }
       }
 
       cardWrapper.appendChild(frontClone);
@@ -270,7 +316,7 @@ export default function Home() {
     const selectedLinks = links.slice(0, 4);
 
     for (const link of selectedLinks) {
-      qrPromises.push(QRCode.toDataURL(link.url, { width: 150, margin: 2 }));
+      qrPromises.push(QRCode.toDataURL(link.url, { width: 200, margin: 1, errorCorrectionLevel: 'M' }));
     }
 
     // Wait for all QRs
@@ -280,38 +326,44 @@ export default function Home() {
     const qrContainer = document.createElement('div');
     qrContainer.style.display = 'grid';
     qrContainer.style.gridTemplateColumns = selectedLinks.length > 2 ? '1fr 1fr' : '1fr';
-    qrContainer.style.gap = '25px';
+    qrContainer.style.gap = '40px';
     qrContainer.style.width = '100%';
     qrContainer.style.maxWidth = '1000px';
-    qrContainer.style.marginTop = '60px';
+    qrContainer.style.marginTop = '80px';
+    qrContainer.style.padding = '0 60px';
+    qrContainer.style.boxSizing = 'border-box';
 
     selectedLinks.forEach((link, index) => {
       const qrItem = document.createElement('div');
       qrItem.style.display = 'flex';
       qrItem.style.flexDirection = 'column';
       qrItem.style.alignItems = 'center';
-      qrItem.style.gap = '12px';
+      qrItem.style.gap = '16px';
       qrItem.style.background = '#ffffff';
-      qrItem.style.padding = '25px';
-      qrItem.style.borderRadius = '12px';
+      qrItem.style.padding = '35px';
+      qrItem.style.borderRadius = '0';
+      qrItem.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
 
       const qrImg = document.createElement('img');
       qrImg.src = qrDataURLs[index];
-      qrImg.style.width = '150px';
-      qrImg.style.height = '150px';
+      qrImg.style.width = '180px';
+      qrImg.style.height = '180px';
+      qrImg.style.display = 'block';
 
       const label = document.createElement('div');
       label.textContent = link.label;
-      label.style.fontSize = '20px';
+      label.style.fontSize = '24px';
       label.style.textAlign = 'center';
       label.style.color = '#000000';
       label.style.fontWeight = 'bold';
 
       const urlText = document.createElement('div');
-      urlText.textContent = link.url.length > 30 ? link.url.substring(0, 27) + '...' : link.url;
-      urlText.style.fontSize = '16px';
+      urlText.textContent = link.url.length > 40 ? link.url.substring(0, 37) + '...' : link.url;
+      urlText.style.fontSize = '18px';
       urlText.style.textAlign = 'center';
       urlText.style.color = '#666666';
+      urlText.style.wordBreak = 'break-word';
+      urlText.style.maxWidth = '100%';
 
       qrItem.appendChild(qrImg);
       qrItem.appendChild(label);
@@ -328,7 +380,12 @@ export default function Home() {
         width: 1440,
         height: 2560,
         backgroundColor: '#000000',
-        scale: 2
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 5000,
+        windowHeight: 2560
       });
 
       const link = document.createElement('a');
