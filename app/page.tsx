@@ -37,7 +37,7 @@ const STEP_KEYS = [
   "preview",
 ];
 
-const styles = ["techno", "kosma", "classic"] as const;
+const styles = ["techno", "kosma"] as const;
 
 export default function Home() {
   const [cardData, setCardData] = useState<CardData>({
@@ -139,8 +139,8 @@ export default function Home() {
     cardWrapper.style.alignItems = 'center';
 
     // Find current card faces
-    const frontFace = document.querySelector('.techno-front, .kosma-front, .classic-front') as HTMLElement;
-    const backFace = document.querySelector('.techno-back, .kosma-back, .classic-back') as HTMLElement;
+    const frontFace = document.querySelector('.techno-front, .kosma-front') as HTMLElement;
+    const backFace = document.querySelector('.techno-back, .kosma-back') as HTMLElement;
 
     if (frontFace && backFace) {
       // Clone front
@@ -186,9 +186,6 @@ export default function Home() {
       } else if (frontFace.classList.contains('techno-front')) {
         frontClone.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         frontClone.style.color = '#FFFFFF';
-      } else if (frontFace.classList.contains('classic-front')) {
-        frontClone.style.backgroundColor = '#ffffff';
-        frontClone.style.color = '#000000';
       }
 
       // Clone back
@@ -272,49 +269,6 @@ export default function Home() {
             </div>
           `;
         }
-      } else if (backFace.classList.contains('classic-back')) {
-        backClone.style.backgroundColor = '#ffffff';
-        backClone.style.color = '#000000';
-        backClone.style.padding = '35px';
-        backClone.style.boxSizing = 'border-box';
-        backClone.style.display = 'flex';
-        backClone.style.flexDirection = 'column';
-        backClone.style.justifyContent = 'space-between';
-        // Update classic back content
-        const backContent = backClone.querySelector('.classic-contact-item') as HTMLElement;
-        if (backContent && backContent.parentElement) {
-          const parent = backContent.parentElement;
-          parent.innerHTML = `
-            <div style="font-size: 34px; line-height: 1.8; color: #000000;">
-              <div style="margin-bottom: 8px;">
-                <span style="font-weight: 600;">Phone:</span> ${cardData.phone || "Not provided"}
-              </div>
-              <div style="margin-bottom: 8px;">
-                <span style="font-weight: 600;">Email:</span> ${cardData.email || "Not provided"}
-              </div>
-              <div style="margin-bottom: 8px;">
-                <span style="font-weight: 600;">Website:</span> ${cardData.website || "Not provided"}
-              </div>
-              <div style="margin-bottom: 8px;">
-                <span style="font-weight: 600;">Address:</span> ${cardData.address || "Not provided"}
-              </div>
-              ${cardData.socials.length > 0 ? `
-                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
-                  <div style="font-weight: 600; margin-bottom: 6px;">Social Links:</div>
-                  ${cardData.socials.map((social) => `<div style="margin-bottom: 4px; font-size: 32px;">${social.platform}: ${social.handle}</div>`).join('')}
-                </div>
-              ` : ''}
-            </div>
-          `;
-        }
-        // Add company name at bottom
-        const footer = document.createElement('div');
-        footer.style.fontSize = '38px';
-        footer.style.fontWeight = '500';
-        footer.style.color = '#666666';
-        footer.style.marginTop = 'auto';
-        footer.textContent = cardData.company || "Your Company";
-        backClone.appendChild(footer);
       }
 
       cardWrapper.appendChild(frontClone);
@@ -1172,99 +1126,6 @@ export default function Home() {
           transform: rotateY(180deg);
         }
 
-        /* Classic Card Styles */
-        .classic-card-wrapper {
-          width: clamp(300px, 80vw, 600px);
-          aspect-ratio: 1.75;
-          position: relative;
-          perspective: 1500px;
-          cursor: pointer;
-        }
-
-        .classic-card {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          border-radius: 0;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
-
-        .classic-card:hover {
-          transform: rotateY(180deg);
-        }
-
-        .classic-card-face {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-          border-radius: 0;
-          overflow: hidden;
-          padding: clamp(12px, 3vw, 35px);
-          box-sizing: border-box;
-          font-family: sans-serif;
-        }
-
-        .classic-front {
-          background: #ffffff;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          color: #000000;
-        }
-
-        .classic-back {
-          background: #ffffff;
-          transform: rotateY(180deg);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          color: #000000;
-        }
-
-        .classic-name {
-          font-size: clamp(14px, 3.5vw, 32px);
-          font-weight: 700;
-          margin-bottom: clamp(4px, 1vw, 8px);
-          color: #000000;
-        }
-
-        .classic-title {
-          font-size: clamp(8px, 1.8vw, 16px);
-          font-weight: 400;
-          color: #333333;
-          margin-bottom: clamp(8px, 2vw, 20px);
-        }
-
-        .classic-company {
-          font-size: clamp(7px, 1.5vw, 14px);
-          font-weight: 500;
-          color: #666666;
-          margin-top: auto;
-        }
-
-        .classic-contact-item {
-          font-size: clamp(6px, 1.4vw, 12px);
-          margin-bottom: clamp(4px, 1vw, 8px);
-          color: #000000;
-          line-height: 1.6;
-        }
-
-        .classic-contact-label {
-          font-weight: 600;
-          color: #000000;
-          margin-right: clamp(4px, 0.8vw, 8px);
-        }
-
-        .classic-social-section {
-          margin-top: clamp(8px, 2vw, 16px);
-          padding-top: clamp(8px, 2vw, 16px);
-          border-top: 1px solid #e0e0e0;
-        }
-
         .glass-arrow {
           background: rgba(255, 140, 0, 0.05);
           backdrop-filter: blur(10px);
@@ -1502,7 +1363,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                ) : cardStyle === "kosma" ? (
+                ) : (
                     <div className="kosma-card-wrapper" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
                     <div className="kosma-card">
                       <div className="kosma-card-face kosma-front">
@@ -1556,50 +1417,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="classic-card-wrapper" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
-                    <div className="classic-card">
-                      <div className="classic-card-face classic-front">
-                        <div>
-                          <div className="classic-name">{cardData.name || "Your Name"}</div>
-                          <div className="classic-title">{cardData.title || "Your Title"}</div>
-                        </div>
-                        <div className="classic-company">{cardData.company || "Your Company"}</div>
-                      </div>
-                      <div className="classic-card-face classic-back">
-                        <div>
-                          <div className="classic-contact-item">
-                            <span className="classic-contact-label">Phone:</span>
-                            {cardData.phone || "Not provided"}
-                          </div>
-                          <div className="classic-contact-item">
-                            <span className="classic-contact-label">Email:</span>
-                            {cardData.email || "Not provided"}
-                          </div>
-                          <div className="classic-contact-item">
-                            <span className="classic-contact-label">Website:</span>
-                            {cardData.website || "Not provided"}
-                          </div>
-                          <div className="classic-contact-item">
-                            <span className="classic-contact-label">Address:</span>
-                            {cardData.address || "Not provided"}
-                          </div>
-                          {cardData.socials.length > 0 && (
-                            <div className="classic-social-section">
-                              <div className="classic-contact-label" style={{ marginBottom: 'clamp(4px, 1vw, 8px)' }}>Social Links:</div>
-                              {cardData.socials.map((social, i) => (
-                                <div key={i} className="classic-contact-item">
-                                  {social.platform}: {social.handle}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div className="classic-company">{cardData.company || "Your Company"}</div>
-                      </div>
-                    </div>
-                  </div>
-                  )}
+                )}
                 </div>
                 <button 
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 glass-arrow z-10"
