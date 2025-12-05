@@ -4,7 +4,6 @@ import { useState } from "react";
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import FluidBackground from "./FluidBackground";
-import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface SocialLink {
   platform: string;
@@ -21,6 +20,7 @@ interface CardData {
   website: string;
   address: string;
   photo: string;
+  logo: string;
   socials: SocialLink[];
 }
 
@@ -33,6 +33,7 @@ const STEP_KEYS = [
   "website",
   "address",
   "photo",
+  "logo",
   "socials",
   "preview",
 ];
@@ -49,6 +50,7 @@ export default function Home() {
     website: "",
     address: "",
     photo: "",
+    logo: "",
     socials: [],
   });
 
@@ -117,7 +119,7 @@ export default function Home() {
     tempDiv.style.top = '-9999px';
     tempDiv.style.width = '1440px';
     tempDiv.style.height = '2560px';
-    tempDiv.style.background = 'linear-gradient(180deg, #000000 0%, #1a1a1a 100%)';
+    tempDiv.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 50%, #A8A8A8 100%)';
     tempDiv.style.display = 'flex';
     tempDiv.style.flexDirection = 'column';
     tempDiv.style.alignItems = 'center';
@@ -149,6 +151,7 @@ export default function Home() {
       const frontClone = frontFace.cloneNode(true) as HTMLElement;
       frontClone.style.position = 'static';
       frontClone.style.transform = 'none';
+      frontClone.style.backfaceVisibility = 'visible';
       frontClone.style.width = '1000px';
       frontClone.style.height = '600px';
       frontClone.style.margin = '0';
@@ -160,9 +163,9 @@ export default function Home() {
       frontClone.style.justifyContent = 'space-between';
       frontClone.style.fontFamily = 'monospace';
 
-      // Ensure Kosma card colors are preserved
+      // Apply card-specific styling
       if (frontFace.classList.contains('kosma-front')) {
-        frontClone.style.backgroundColor = '#050505';
+        frontClone.style.background = '#050505';
         frontClone.style.color = '#FFFFFF';
         // Add the large K symbol background
         const kElement = frontClone.querySelector('.kosma-topo-k') as HTMLElement;
@@ -186,14 +189,37 @@ export default function Home() {
           frontContent.style.justifyContent = 'space-between';
         }
       } else if (frontFace.classList.contains('techno-front')) {
-        frontClone.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        frontClone.style.color = '#FFFFFF';
+        frontClone.style.backgroundColor = '#EAEAE6';
+        frontClone.style.color = '#111111';
+        frontClone.style.fontFamily = "'Space Mono', monospace";
       }
+
+      // Scale front card text and logos 2x for export
+      frontClone.querySelectorAll('*').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        // Scale text elements
+        if (htmlEl.innerText && htmlEl.children.length === 0) {
+          const computed = window.getComputedStyle(htmlEl);
+          const fontSize = parseFloat(computed.fontSize);
+          if (fontSize > 0) {
+            htmlEl.style.fontSize = `${fontSize * 2}px`;
+          }
+        }
+        // Scale logo/image elements
+        if (htmlEl.tagName === 'IMG') {
+          const computed = window.getComputedStyle(htmlEl);
+          const width = parseFloat(computed.width);
+          const height = parseFloat(computed.height);
+          if (width > 0) htmlEl.style.width = `${width * 2}px`;
+          if (height > 0 && !isNaN(height)) htmlEl.style.height = `${height * 2}px`;
+        }
+      });
 
       // Clone back
       const backClone = backFace.cloneNode(true) as HTMLElement;
       backClone.style.position = 'static';
       backClone.style.transform = 'none';
+      backClone.style.backfaceVisibility = 'visible';
       backClone.style.width = '1000px';
       backClone.style.height = '600px';
       backClone.style.margin = '0';
@@ -207,7 +233,7 @@ export default function Home() {
 
       // Ensure back card colors are preserved
       if (backFace.classList.contains('kosma-back')) {
-        backClone.style.backgroundColor = '#050505';
+        backClone.style.background = '#050505';
         backClone.style.color = '#FFFFFF';
         // Add the subtle radial gradient overlay
         backClone.style.position = 'relative';
@@ -244,8 +270,9 @@ export default function Home() {
           `;
         }
       } else if (backFace.classList.contains('techno-back')) {
-        backClone.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        backClone.style.color = '#FFFFFF';
+        backClone.style.backgroundColor = '#EAEAE6';
+        backClone.style.color = '#111111';
+        backClone.style.fontFamily = "'Space Mono', monospace";
         // Update techno back content
         const backContent = backClone.querySelector('.center-content') as HTMLElement;
         if (backContent) {
@@ -420,15 +447,7 @@ export default function Home() {
 
   
 
-  const updateSocial = (index: number, key: keyof SocialLink, value: string) => {
-    const newSocials = [...cardData.socials];
-    newSocials[index] = { ...newSocials[index], [key]: value };
-    // Auto-update label when platform changes
-    if (key === 'platform') {
-      newSocials[index].label = value;
-    }
-    setCardData(prev => ({ ...prev, socials: newSocials }));
-  };
+  // inline social inputs removed; editor popup handles social edits
 
   const removeSocial = (index: number) => {
     const newSocials = cardData.socials.filter((_, i) => i !== index);
@@ -449,10 +468,20 @@ export default function Home() {
     }
   };
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        setCardData(prev => ({ ...prev, logo: base64 }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const nextStyle = () => setStyleIndex((i) => (i + 1) % styles.length);
   const prevStyle = () => setStyleIndex((i) => (i - 1 + styles.length) % styles.length);
-
-  const { user, isLoading } = useUser();
 
   return (
     <>
@@ -573,16 +602,6 @@ export default function Home() {
           justify-content: space-between;
           align-items: flex-end;
           position: relative;
-        }
-
-        .interface-line {
-          position: absolute;
-          top: 50%;
-          left: 0;
-          right: 0;
-          height: 1px;
-          background: #ccc;
-          z-index: 0;
         }
 
         .knob-group {
@@ -1189,7 +1208,7 @@ export default function Home() {
           <div className="question-card">
                 {/* old in-card progress removed — header progress bar is used instead */}
 
-              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && steps[currentStep] !== 'photo' && (
+              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && steps[currentStep] !== 'photo' && steps[currentStep] !== 'logo' && (
                 <div>
                   <h1 className="text-2xl font-bold mb-3">{(() => {
                     const k = steps[currentStep];
@@ -1201,6 +1220,8 @@ export default function Home() {
                       case 'email': return 'Email address';
                       case 'website': return 'Company Website';
                       case 'address': return 'Address';
+                      case 'logo': return 'Upload company logo';
+                      case 'photo': return 'Upload your photo';
                       default: return '';
                     }
                   })()}</h1>
@@ -1230,6 +1251,19 @@ export default function Home() {
                   {cardData.photo && (
                     <div className="mt-2">
                       <img src={cardData.photo} alt="Preview" className="w-16 h-16 object-cover rounded" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {steps[currentStep] === 'logo' && (
+                <div>
+                  <div className="question">Upload company logo (optional)</div>
+                  <div className="small">Logo will appear in center of Kosma style and top-left of Techno style.</div>
+                  <input type="file" accept="image/*" onChange={handleLogoChange} className="input mt-4" />
+                  {cardData.logo && (
+                    <div className="mt-2">
+                      <img src={cardData.logo} alt="Logo Preview" className="w-16 h-16 object-contain" />
                     </div>
                   )}
                 </div>
@@ -1400,7 +1434,12 @@ export default function Home() {
                       </button>
                     <div className="techno-card">
                       <div className="techno-card-face techno-front">
-                        <div className="top-label">{cardData.company || "Your Company"}</div>
+                        <div className="top-label">
+                          {cardData.logo && (
+                            <img src={cardData.logo} alt="Logo" style={{ width: 'clamp(30px, 8vw, 60px)', height: 'auto', marginBottom: '5px' }} />
+                          )}
+                          {cardData.company || "Your Company"}
+                        </div>
                         <div className="center-content">
                           <h1 className="name">{cardData.name || "Your Name"}</h1>
                           <p className="role">[ <span>{cardData.title || "Your Title"}</span> ]</p>
@@ -1474,7 +1513,11 @@ export default function Home() {
                             {cardData.company || "Your Company"}<br />
                           </div>
                           <div className="kosma-topo-symbol-container">
-                            <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
+                            {cardData.logo ? (
+                              <img src={cardData.logo} alt="Logo" style={{ width: 'clamp(80px, 24vw, 200px)', height: 'auto', maxHeight: '180px', objectFit: 'contain' }} />
+                            ) : (
+                              <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
+                            )}
                           </div>
                           <div className="kosma-logo-text-bottom">
                             <span>{cardData.name || "Your Name"}</span>
