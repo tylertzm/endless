@@ -230,17 +230,17 @@ export default function Home() {
           backContent.style.position = 'relative';
           backContent.style.zIndex = '1';
           backContent.innerHTML = `
-            <div style="font-size: 32px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word;">
+            <div style="font-size: 43px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word;">
               ${cardData.title || "Your Title"}
             </div>
-            <div style="font-size: 13px; line-height: 1.8; color: #1F1F1F; margin-top: 8px;">
+            <div style="font-size: 17px; line-height: 1.8; color: #1F1F1F; margin-top: 8px;">
               <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
               <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
               <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
               <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
               ${cardData.socials.length > 0 ? `
                 <p style="margin: 8px 0 4px 0;"><strong>Social Links:</strong></p>
-                ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 12px;">${social.platform}: ${social.handle}</p>`).join('')}
+                ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 16px;">${social.platform}: ${social.handle}</p>`).join('')}
               ` : ''}
             </div>
           `;
@@ -257,8 +257,8 @@ export default function Home() {
           backContent.style.flexDirection = 'column';
           backContent.style.justifyContent = 'center';
           backContent.innerHTML = `
-            <h2 style="font-size: 28px; margin-bottom: 16px; font-weight: 600;">Contact Information</h2>
-            <div style="font-family: 'Space Mono', monospace; font-size: 13px; line-height: 1.8;">
+            <h2 style="font-size: 37px; margin-bottom: 16px; font-weight: 600;">Contact Information</h2>
+            <div style="font-family: 'Space Mono', monospace; font-size: 17px; line-height: 1.8;">
               <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
               <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
               <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
@@ -266,7 +266,7 @@ export default function Home() {
               ${cardData.socials.length > 0 ? `
                 <div style="margin-top: 10px;">
                   <strong style="display: block; margin-bottom: 6px;">Social:</strong>
-                  ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 12px;">${social.platform}: ${social.handle}</p>`).join('')}
+                  ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 16px;">${social.platform}: ${social.handle}</p>`).join('')}
                 </div>
               ` : ''}
             </div>
