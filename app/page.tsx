@@ -205,17 +205,17 @@ export default function Home() {
         const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
         if (backContent) {
           backContent.innerHTML = `
-            <div style="font-size: 28px; line-height: 1.1; font-weight: 600; letter-spacing: -1px;">
+            <div style="font-size: 32px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word;">
               ${cardData.title || "Your Title"}
             </div>
-            <div style="font-size: 12px; line-height: 1.6; color: #1F1F1F;">
-              <p><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
-              <p><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
-              <p><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
-              <p><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+            <div style="font-size: 13px; line-height: 1.8; color: #1F1F1F; margin-top: 8px;">
+              <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
               ${cardData.socials.length > 0 ? `
-                <p><strong>Social Links:</strong></p>
-                ${cardData.socials.map((social) => `<p>${social.platform}: ${social.handle}</p>`).join('')}
+                <p style="margin: 8px 0 4px 0;"><strong>Social Links:</strong></p>
+                ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 12px;">${social.platform}: ${social.handle}</p>`).join('')}
               ` : ''}
             </div>
           `;
@@ -227,16 +227,16 @@ export default function Home() {
         const backContent = backClone.querySelector('.center-content') as HTMLElement;
         if (backContent) {
           backContent.innerHTML = `
-            <h2 style="font-size: 24px; margin-bottom: 20px;">Contact Information</h2>
-            <div style="font-family: 'Space Mono', monospace; font-size: 14px; line-height: 1.6;">
-              <p><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
-              <p><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
-              <p><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
-              <p><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+            <h2 style="font-size: 28px; margin-bottom: 16px; font-weight: 600;">Contact Information</h2>
+            <div style="font-family: 'Space Mono', monospace; font-size: 13px; line-height: 1.8;">
+              <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
+              <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
               ${cardData.socials.length > 0 ? `
-                <div style="margin-top: 12px;">
-                  <strong>Social:</strong>
-                  ${cardData.socials.map((social) => `<p>${social.platform}: ${social.handle}</p>`).join('')}
+                <div style="margin-top: 10px;">
+                  <strong style="display: block; margin-bottom: 6px;">Social:</strong>
+                  ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 12px;">${social.platform}: ${social.handle}</p>`).join('')}
                 </div>
               ` : ''}
             </div>
@@ -250,7 +250,7 @@ export default function Home() {
         if (backContent && backContent.parentElement) {
           const parent = backContent.parentElement;
           parent.innerHTML = `
-            <div style="font-size: 12px; line-height: 1.6; color: #000000;">
+            <div style="font-size: 13px; line-height: 1.8; color: #000000;">
               <div style="margin-bottom: 8px;">
                 <span style="font-weight: 600;">Phone:</span> ${cardData.phone || "Not provided"}
               </div>
@@ -264,9 +264,9 @@ export default function Home() {
                 <span style="font-weight: 600;">Address:</span> ${cardData.address || "Not provided"}
               </div>
               ${cardData.socials.length > 0 ? `
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
-                  <div style="font-weight: 600; margin-bottom: 8px;">Social Links:</div>
-                  ${cardData.socials.map((social) => `<div style="margin-bottom: 4px;">${social.platform}: ${social.handle}</div>`).join('')}
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                  <div style="font-weight: 600; margin-bottom: 6px;">Social Links:</div>
+                  ${cardData.socials.map((social) => `<div style="margin-bottom: 4px; font-size: 12px;">${social.platform}: ${social.handle}</div>`).join('')}
                 </div>
               ` : ''}
             </div>
