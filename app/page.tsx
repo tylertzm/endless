@@ -388,10 +388,20 @@ export default function Home() {
         windowHeight: 2560
       });
 
-      const link = document.createElement('a');
-      link.download = `${cardData.name || 'business-card'}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      // Convert canvas to blob for better mobile compatibility
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${cardData.name || 'business-card'}.png`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png', 0.95);
     } catch (error) {
       console.error('Error generating PNG:', error);
       alert('Failed to generate PNG. Please try again.');
