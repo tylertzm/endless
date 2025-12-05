@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --text-faded: #888888;
+  --primary-accent: #FFFFFF;
+  --cursor-color: #FFFFFF;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Large input style */
+.large-input-wrapper {
+  display: flex;
+  align-items: baseline;
+  font-size: clamp(3vh, 5vw, 60px);
+  font-weight: 700;
+  margin-bottom: clamp(2vh, 4vw, 40px);
+  width: 100%;
+}
+
+.input-prefix {
+  color: var(--text-faded);
+  user-select: none;
+  white-space: pre;
+  font-size: clamp(0.8vh, 1.5vw, 16px);
+  font-weight: 400;
+}
+
+.large-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: clamp(3vh, 5vw, 60px);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: var(--foreground);
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  caret-color: var(--cursor-color);
+}
+
+.large-input::placeholder {
+  color: var(--text-faded);
+  opacity: 0.5;
+}
+
+/* Button style */
+.btn-next {
+  background-color: transparent;
+  border: 2px solid var(--primary-accent);
+  color: var(--primary-accent);
+  padding: clamp(0.4vh, 0.8vw, 8px) clamp(0.8vh, 1.6vw, 16px);
+  font-size: clamp(0.7vh, 1.4vw, 14px);
+  font-weight: 600;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.btn-next:hover {
+  background-color: var(--primary-accent);
+  color: #000;
+  box-shadow: none;
+}
+
+.btn-back {
+  background-color: transparent;
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #888;
+  padding: clamp(0.4vh, 0.8vw, 8px) clamp(0.8vh, 1.6vw, 16px);
+  font-size: clamp(0.7vh, 1.4vw, 14px);
+  font-weight: 600;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.btn-back:hover {
+  color: #fff;
+  border-color: rgba(255,255,255,0.5);
+}
+
+.btn-back:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-back:disabled:hover {
+  color: #888;
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* Keyboard hint */
+.keyboard-hint {
+  color: #888;
+  font-size: clamp(0.7vh, 1.4vw, 14px);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.4vh, 0.8vw, 8px);
+  opacity: 0.8;
+}
+
+.enter-key {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: clamp(0.1vh, 0.2vw, 2px) clamp(0.3vh, 0.6vw, 6px);
+  font-size: clamp(0.6vh, 1.2vw, 12px);
+  font-weight: bold;
+  display: inline-block;
 }
