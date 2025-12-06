@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface SocialLink {
@@ -24,7 +24,7 @@ interface CardData {
   style?: 'kosma' | 'techno';
 }
 
-export default function PreviewSite() {
+function PreviewContent() {
   const searchParams = useSearchParams();
 
   const data = useMemo(() => {
@@ -567,5 +567,13 @@ export default function PreviewSite() {
         Save Contact
       </button>
     </div>
+  );
+}
+
+export default function PreviewSite() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+      <PreviewContent />
+    </Suspense>
   );
 }
