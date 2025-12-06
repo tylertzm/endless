@@ -202,7 +202,8 @@ export default function Home() {
           const computed = window.getComputedStyle(htmlEl);
           const fontSize = parseFloat(computed.fontSize);
           if (fontSize > 0) {
-            htmlEl.style.fontSize = `${fontSize * 3}px`;
+            // Scale up, ensuring at least 24px for readability
+            htmlEl.style.fontSize = `${Math.max(fontSize * 3, 24)}px`;
           }
         }
         // Scale logo/image elements
