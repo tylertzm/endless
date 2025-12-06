@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 
 interface SocialLink {
@@ -30,7 +30,7 @@ interface HistoryItem {
   timestamp: string;
 }
 
-export default function CardViewer() {
+function CardContent() {
   const searchParams = useSearchParams();
   const params = useParams();
 
@@ -100,6 +100,8 @@ export default function CardViewer() {
         vCardData += `X-SOCIALPROFILE;type=${social.platform}:${url}\n`;
       });
     }
+
+    vCardData += `NOTE:Create your own here ;) https://endless-two.vercel.app\n`;
 
     vCardData += 'END:VCARD';
 
@@ -462,7 +464,9 @@ export default function CardViewer() {
       `}</style>
 
       <div className="mb-12">
-         <img src="/endless.webp?v=2" alt="Endless Logo" className="w-32 h-auto" />
+         <a href="https://endless-two.vercel.app" target="_blank" rel="noopener noreferrer">
+           <img src="/endless.webp?v=2" alt="Endless Logo" className="w-32 h-auto cursor-pointer hover:opacity-80 transition-opacity" />
+         </a>
       </div>
 
       <div className="relative group cursor-pointer" onClick={saveContact}>
@@ -596,5 +600,13 @@ export default function CardViewer() {
       </button>
       </div>
     </div>
+  );
+}
+
+export default function CardViewer() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+      <CardContent />
+    </Suspense>
   );
 }

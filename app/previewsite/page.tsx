@@ -72,6 +72,8 @@ function PreviewContent() {
       });
     }
 
+    vCardData += `NOTE:Create your own here ;) https://endless-two.vercel.app\n`;
+
     vCardData += 'END:VCARD';
 
     const blob = new Blob([vCardData], { type: 'text/vcard' });
@@ -433,7 +435,9 @@ function PreviewContent() {
       `}</style>
 
       <div className="mb-12">
-         <img src="/endless.webp?v=2" alt="Endless Logo" className="w-32 h-auto" />
+         <a href="https://endless-two.vercel.app" target="_blank" rel="noopener noreferrer">
+           <img src="/endless.webp?v=2" alt="Endless Logo" className="w-32 h-auto cursor-pointer hover:opacity-80 transition-opacity" />
+         </a>
       </div>
 
       <div className="relative group cursor-pointer" onClick={saveContact}>
