@@ -216,6 +216,18 @@ export default function Home() {
         }
       });
 
+      // Social Icons Map for Export
+      const socialIcons: Record<string, string> = {
+        Instagram: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+        LinkedIn: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
+        X: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>',
+        GitHub: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>',
+        Facebook: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+        TikTok: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+        YouTube: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+        Other: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>'
+      };
+
       // Clone back
       const backClone = backFace.cloneNode(true) as HTMLElement;
       backClone.style.position = 'static';
@@ -231,6 +243,16 @@ export default function Home() {
       backClone.style.flexDirection = 'column';
       backClone.style.justifyContent = 'space-between';
       backClone.style.fontFamily = 'monospace';
+
+      // Calculate dynamic font size based on item count to prevent overflow
+      const contactCount = [cardData.phone, cardData.email, cardData.website, cardData.address].filter(Boolean).length;
+      const socialCount = cardData.socials.length;
+      const maxItems = Math.max(contactCount, socialCount);
+      
+      let contentFontSize = 34;
+      if (maxItems > 8) contentFontSize = 20;
+      else if (maxItems > 6) contentFontSize = 24;
+      else if (maxItems > 4) contentFontSize = 28;
 
       // Ensure back card colors are preserved
       if (backFace.classList.contains('kosma-back')) {
@@ -258,14 +280,23 @@ export default function Home() {
             <div style="font-size: 86px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word; color: #FFFFFF;">
               ${cardData.title || "Your Title"}
             </div>
-            <div style="font-size: 34px; line-height: 1.8; color: #FFFFFF; margin-top: 8px;">
-              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Phone:</strong> ${cardData.phone || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Email:</strong> ${cardData.email || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Website:</strong> ${cardData.website || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Address:</strong> ${cardData.address || "Not provided"}</p>
+            <div style="font-size: ${contentFontSize}px; line-height: 1.8; color: #FFFFFF; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start;">
+              <div style="flex: 1; padding-right: 20px;">
+                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Phone:</strong> ${cardData.phone || "Not provided"}</p>
+                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Email:</strong> ${cardData.email || "Not provided"}</p>
+                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Website:</strong> ${cardData.website || "Not provided"}</p>
+                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Address:</strong> ${cardData.address || "Not provided"}</p>
+              </div>
               ${cardData.socials.length > 0 ? `
-                <p style="margin: 8px 0 4px 0; color: #FFFFFF;"><strong>Social Links:</strong></p>
-                ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 32px; color: #FFFFFF;">${social.platform}: ${social.handle}</p>`).join('')}
+                <div style="flex: 0 0 40%;">
+                  <p style="margin: 0 0 10px 0; color: #FFFFFF;"><strong>Socials:</strong></p>
+                  ${cardData.socials.map((social) => `
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                      <span style="display: inline-block; width: ${contentFontSize}px; height: ${contentFontSize}px; margin-right: 10px;">${socialIcons[social.platform] || socialIcons['Other']}</span>
+                      <span style="font-size: ${contentFontSize}px; color: #FFFFFF;">${social.handle}</span>
+                    </div>
+                  `).join('')}
+                </div>
               ` : ''}
             </div>
           `;
@@ -284,15 +315,22 @@ export default function Home() {
           backContent.style.justifyContent = 'center';
           backContent.innerHTML = `
             <h2 style="font-size: 74px; margin-bottom: 16px; font-weight: 600;">Contact Information</h2>
-            <div style="font-family: 'Space Mono', monospace; font-size: 34px; line-height: 1.8;">
-              <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
-              <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+            <div style="font-family: 'Space Mono', monospace; font-size: ${contentFontSize}px; line-height: 1.8; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; text-align: left;">
+              <div style="flex: 1; padding-right: 20px;">
+                <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
+                <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
+                <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
+                <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+              </div>
               ${cardData.socials.length > 0 ? `
-                <div style="margin-top: 10px;">
-                  <strong style="display: block; margin-bottom: 6px;">Social:</strong>
-                  ${cardData.socials.map((social) => `<p style="margin: 4px 0; font-size: 32px;">${social.platform}: ${social.handle}</p>`).join('')}
+                <div style="flex: 0 0 40%;">
+                  <strong style="display: block; margin-bottom: 10px;">Socials:</strong>
+                  ${cardData.socials.map((social) => `
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                      <span style="display: inline-block; width: ${contentFontSize}px; height: ${contentFontSize}px; margin-right: 10px;">${socialIcons[social.platform] || socialIcons['Other']}</span>
+                      <span style="font-size: ${contentFontSize}px;">${social.handle}</span>
+                    </div>
+                  `).join('')}
                 </div>
               ` : ''}
             </div>
