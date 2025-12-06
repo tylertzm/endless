@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import FluidBackground from "./FluidBackground";
@@ -61,6 +61,50 @@ export default function Home() {
   const [startX, setStartX] = useState<number | null>(null);
   const [platformPopup, setPlatformPopup] = useState<{ platform: string | null; platformName?: string; handle: string } | null>(null);
   const [steps] = useState<string[]>(STEP_KEYS);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('remember_card_data');
+    const savedStep = localStorage.getItem('remember_current_step');
+    const savedStyle = localStorage.getItem('remember_style_index');
+
+    if (savedData) {
+      try {
+        setCardData(JSON.parse(savedData));
+      } catch (e) {
+        console.error("Failed to parse saved card data", e);
+      }
+    }
+    if (savedStep) {
+      const step = parseInt(savedStep, 10);
+      if (!isNaN(step) && step >= 0 && step < STEP_KEYS.length) {
+        setCurrentStep(step);
+      }
+    }
+    if (savedStyle) {
+      const style = parseInt(savedStyle, 10);
+      if (!isNaN(style) && style >= 0 && style < styles.length) {
+        setStyleIndex(style);
+      }
+    }
+  }, []);
+
+  // Save to localStorage on change
+  useEffect(() => {
+    try {
+      localStorage.setItem('remember_card_data', JSON.stringify(cardData));
+    } catch (e) {
+      console.error('Failed to save card data to localStorage:', e);
+    }
+  }, [cardData]);
+
+  useEffect(() => {
+    localStorage.setItem('remember_current_step', currentStep.toString());
+  }, [currentStep]);
+
+  useEffect(() => {
+    localStorage.setItem('remember_style_index', styleIndex.toString());
+  }, [styleIndex]);
 
   const cardStyle = styles[styleIndex];
 
@@ -244,15 +288,15 @@ export default function Home() {
       backClone.style.justifyContent = 'space-between';
       backClone.style.fontFamily = 'monospace';
 
-      // Calculate dynamic font size based on item count to prevent overflow
-      const contactCount = [cardData.phone, cardData.email, cardData.website, cardData.address].filter(Boolean).length;
-      const socialCount = cardData.socials.length;
-      const maxItems = Math.max(contactCount, socialCount);
-      
-      let contentFontSize = 34;
-      if (maxItems > 8) contentFontSize = 20;
-      else if (maxItems > 6) contentFontSize = 24;
-      else if (maxItems > 4) contentFontSize = 28;
+      // Generate Master QR Code for the back of the card
+      // This encodes the card data into a URL parameter for the website to render
+      // We exclude heavy assets like photos/logos from the QR code to keep the URL short
+      const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
+      const encodedData = btoa(JSON.stringify(exportData));
+      const uuid = crypto.randomUUID();
+      // Use the production domain for the QR code
+      const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
+      const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
 
       // Ensure back card colors are preserved
       if (backFace.classList.contains('kosma-back')) {
@@ -271,33 +315,31 @@ export default function Home() {
         overlay.style.pointerEvents = 'none';
         backClone.insertBefore(overlay, backClone.firstChild);
         
-        // Update kosma back content to show all contact info (light text on dark bg)
+        // Update kosma back content to show QR code
         const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
         if (backContent) {
           backContent.style.position = 'relative';
           backContent.style.zIndex = '1';
+          backContent.style.display = 'flex';
+          backContent.style.flexDirection = 'row';
+          backContent.style.alignItems = 'center';
+          backContent.style.justifyContent = 'space-between';
+          backContent.style.height = '100%';
+          backContent.style.padding = '0 40px';
+          
           backContent.innerHTML = `
-            <div style="font-size: 86px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word; color: #FFFFFF;">
-              ${cardData.title || "Your Title"}
-            </div>
-            <div style="font-size: ${contentFontSize}px; line-height: 1.8; color: #FFFFFF; margin-top: 8px; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start;">
-              <div style="flex: 1; padding-right: 20px;">
-                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Phone:</strong> ${cardData.phone || "Not provided"}</p>
-                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Email:</strong> ${cardData.email || "Not provided"}</p>
-                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Website:</strong> ${cardData.website || "Not provided"}</p>
-                <p style="margin: 6px 0;"><strong style="color: #FFFFFF;">Address:</strong> ${cardData.address || "Not provided"}</p>
+            <div style="flex: 1; padding-right: 40px;">
+              <div style="font-size: 86px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word; color: #FFFFFF; margin-bottom: 20px;">
+                ${cardData.title || "Your Title"}
               </div>
-              ${cardData.socials.length > 0 ? `
-                <div style="flex: 0 0 40%;">
-                  <p style="margin: 0 0 10px 0; color: #FFFFFF;"><strong>Socials:</strong></p>
-                  ${cardData.socials.map((social) => `
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                      <span style="display: inline-block; width: ${contentFontSize}px; height: ${contentFontSize}px; margin-right: 10px;">${socialIcons[social.platform] || socialIcons['Other']}</span>
-                      <span style="font-size: ${contentFontSize}px; color: #FFFFFF;">${social.handle}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
+              <div style="font-size: 32px; color: #888888;">
+                Scan to connect and view full profile
+              </div>
+            </div>
+            <div style="flex: 0 0 300px; display: flex; justify-content: center; align-items: center;">
+              <div style="background: white; padding: 20px; border-radius: 16px;">
+                <img src="${masterQrDataUrl}" style="width: 260px; height: 260px; display: block;" />
+              </div>
             </div>
           `;
         }
@@ -308,31 +350,25 @@ export default function Home() {
         // Update techno back content
         const backContent = backClone.querySelector('.center-content') as HTMLElement;
         if (backContent) {
-          backContent.style.textAlign = 'center';
+          backContent.style.textAlign = 'left';
           backContent.style.flexGrow = '1';
           backContent.style.display = 'flex';
-          backContent.style.flexDirection = 'column';
-          backContent.style.justifyContent = 'center';
+          backContent.style.flexDirection = 'row';
+          backContent.style.justifyContent = 'space-between';
+          backContent.style.alignItems = 'center';
+          backContent.style.padding = '0 20px';
+          
           backContent.innerHTML = `
-            <h2 style="font-size: 74px; margin-bottom: 16px; font-weight: 600;">Contact Information</h2>
-            <div style="font-family: 'Space Mono', monospace; font-size: ${contentFontSize}px; line-height: 1.8; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; text-align: left;">
-              <div style="flex: 1; padding-right: 20px;">
-                <p style="margin: 6px 0;"><strong>Phone:</strong> ${cardData.phone || "Not provided"}</p>
-                <p style="margin: 6px 0;"><strong>Email:</strong> ${cardData.email || "Not provided"}</p>
-                <p style="margin: 6px 0;"><strong>Website:</strong> ${cardData.website || "Not provided"}</p>
-                <p style="margin: 6px 0;"><strong>Address:</strong> ${cardData.address || "Not provided"}</p>
+            <div style="flex: 1; padding-right: 40px;">
+              <h2 style="font-size: 74px; margin-bottom: 16px; font-weight: 600;">Contact</h2>
+              <p style="font-family: 'Space Mono', monospace; font-size: 32px; color: #444;">
+                Scan the QR code to view full contact details and social profiles.
+              </p>
+            </div>
+            <div style="flex: 0 0 300px; display: flex; justify-content: center; align-items: center;">
+              <div style="border: 4px solid #111; padding: 15px; background: white;">
+                <img src="${masterQrDataUrl}" style="width: 260px; height: 260px; display: block;" />
               </div>
-              ${cardData.socials.length > 0 ? `
-                <div style="flex: 0 0 40%;">
-                  <strong style="display: block; margin-bottom: 10px;">Socials:</strong>
-                  ${cardData.socials.map((social) => `
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                      <span style="display: inline-block; width: ${contentFontSize}px; height: ${contentFontSize}px; margin-right: 10px;">${socialIcons[social.platform] || socialIcons['Other']}</span>
-                      <span style="font-size: ${contentFontSize}px;">${social.handle}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
             </div>
           `;
         }
@@ -342,101 +378,7 @@ export default function Home() {
       cardWrapper.appendChild(backClone);
     }
 
-    tempDiv.appendChild(cardWrapper);    // Generate QR codes for links
-    const qrPromises: Promise<string>[] = [];
-    const links: { label: string; url: string }[] = [];
-
-    if (cardData.website) {
-      links.push({ label: 'Website', url: cardData.website.startsWith('http') ? cardData.website : 'https://' + cardData.website });
-    }
-    if (cardData.email) {
-      links.push({ label: 'Email', url: 'mailto:' + cardData.email });
-    }
-    if (cardData.phone) {
-      links.push({ label: 'Phone', url: 'tel:' + cardData.phone });
-    }
-    cardData.socials.forEach(social => {
-      let url = '';
-      switch (social.platform) {
-        case 'Instagram':
-          url = `https://instagram.com/${social.handle}`;
-          break;
-        case 'X':
-          url = `https://twitter.com/${social.handle}`;
-          break;
-        case 'LinkedIn':
-          url = social.handle.startsWith('http') ? social.handle : `https://linkedin.com/in/${social.handle}`;
-          break;
-        case 'GitHub':
-          url = `https://github.com/${social.handle}`;
-          break;
-        default:
-          url = social.handle;
-      }
-      if (url) links.push({ label: social.platform, url });
-    });
-
-    // Limit to 4 QRs
-    const selectedLinks = links.slice(0, 4);
-
-    for (const link of selectedLinks) {
-      qrPromises.push(QRCode.toDataURL(link.url, { width: 200, margin: 1, errorCorrectionLevel: 'M' }));
-    }
-
-    // Wait for all QRs
-    const qrDataURLs = await Promise.all(qrPromises);
-
-    // Add QR codes below the cards
-    const qrContainer = document.createElement('div');
-    qrContainer.style.display = 'grid';
-    qrContainer.style.gridTemplateColumns = selectedLinks.length > 2 ? '1fr 1fr' : '1fr';
-    qrContainer.style.gap = '40px';
-    qrContainer.style.width = '100%';
-    qrContainer.style.maxWidth = '1000px';
-    qrContainer.style.marginTop = '80px';
-    qrContainer.style.padding = '0 60px';
-    qrContainer.style.boxSizing = 'border-box';
-
-    selectedLinks.forEach((link, index) => {
-      const qrItem = document.createElement('div');
-      qrItem.style.display = 'flex';
-      qrItem.style.flexDirection = 'column';
-      qrItem.style.alignItems = 'center';
-      qrItem.style.gap = '16px';
-      qrItem.style.background = '#ffffff';
-      qrItem.style.padding = '35px';
-      qrItem.style.borderRadius = '0';
-      qrItem.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-
-      const qrImg = document.createElement('img');
-      qrImg.src = qrDataURLs[index];
-      qrImg.style.width = '180px';
-      qrImg.style.height = '180px';
-      qrImg.style.display = 'block';
-
-      const label = document.createElement('div');
-      label.textContent = link.label;
-      label.style.fontSize = '24px';
-      label.style.textAlign = 'center';
-      label.style.color = '#000000';
-      label.style.fontWeight = 'bold';
-
-      const urlText = document.createElement('div');
-      urlText.textContent = link.url.length > 40 ? link.url.substring(0, 37) + '...' : link.url;
-      urlText.style.fontSize = '18px';
-      urlText.style.textAlign = 'center';
-      urlText.style.color = '#666666';
-      urlText.style.wordBreak = 'break-word';
-      urlText.style.maxWidth = '100%';
-
-      qrItem.appendChild(qrImg);
-      qrItem.appendChild(label);
-      qrItem.appendChild(urlText);
-      qrContainer.appendChild(qrItem);
-    });
-
-    tempDiv.appendChild(qrContainer);
-
+    tempDiv.appendChild(cardWrapper);
     document.body.appendChild(tempDiv);
 
     try {
@@ -472,6 +414,15 @@ export default function Home() {
     } finally {
       document.body.removeChild(tempDiv);
     }
+  };
+
+  const previewSite = () => {
+    // Exclude heavy assets like photos/logos from the URL to keep it short
+    const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
+    const encodedData = btoa(JSON.stringify(exportData));
+    // Use a local preview route
+    const url = `${window.location.origin}/previewsite?data=${encodedData}`;
+    window.open(url, '_blank');
   };
 
   const totalSteps = steps.length;
@@ -1410,6 +1361,7 @@ export default function Home() {
                   <div className="mt-4 flex gap-2 flex-wrap">
                     <button onClick={exportAsVCard} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Export as Contact</button>
                     <button onClick={exportAsPNG} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Save as PNG</button>
+                    <button onClick={previewSite} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Preview Site</button>
                   </div>
                 </div>
               )}
