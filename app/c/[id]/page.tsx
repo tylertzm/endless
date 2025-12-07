@@ -399,8 +399,11 @@ function CardContent() {
             if (zoomed && touchStartRef.current) {
               e.preventDefault();
               const touch = e.touches[0];
-              setPanX(panX + (touch.clientX - touchStartRef.current.x));
-              setPanY(panY + (touch.clientY - touchStartRef.current.y));
+              const deltaX = touch.clientX - touchStartRef.current.x;
+              const deltaY = touch.clientY - touchStartRef.current.y;
+              setPanX(panX + deltaX / 2);
+              setPanY(panY + deltaY / 2);
+              touchStartRef.current = { x: touch.clientX, y: touch.clientY };
             }
           }}
           onMouseDown={(e) => {
@@ -411,8 +414,11 @@ function CardContent() {
           onMouseMove={(e) => {
             if (zoomed && touchStartRef.current) {
               e.preventDefault();
-              setPanX(panX + (e.clientX - touchStartRef.current.x));
-              setPanY(panY + (e.clientY - touchStartRef.current.y));
+              const deltaX = e.clientX - touchStartRef.current.x;
+              const deltaY = e.clientY - touchStartRef.current.y;
+              setPanX(panX + deltaX / 2);
+              setPanY(panY + deltaY / 2);
+              touchStartRef.current = { x: e.clientX, y: e.clientY };
             }
           }}
           onMouseUp={() => {
