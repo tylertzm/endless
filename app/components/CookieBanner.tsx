@@ -1,19 +1,29 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function CookieBanner() {
-  const [showBanner, setShowBanner] = useState(() => {
-    if (typeof window !== 'undefined') {
+  const bannerRef = useRef<HTMLDivElement | null>(null);
+
+  // Imperatively hide the banner if consent already exists to avoid setState in effects
+  useEffect(() => {
+    try {
       const consent = localStorage.getItem('cookie-consent');
-      return !consent;
+      if (consent && bannerRef.current) {
+        bannerRef.current.style.display = 'none';
+      }
+    } catch {
+      // Ignore localStorage access errors
     }
-    return false;
-  });
+  }, []);
 
   const acceptCookies = () => {
-    localStorage.setItem('cookie-consent', 'accepted');
-    setShowBanner(false);
+    try {
+      localStorage.setItem('cookie-consent', 'accepted');
+    } catch {}
+    if (bannerRef.current) {
+      bannerRef.current.style.display = 'none';
+    }
     // Enable analytics here when you add Vercel Analytics
     if (typeof window !== 'undefined') {
       const w = window as Window & { va?: (event: string, name: string, data: object) => void };
@@ -24,14 +34,16 @@ export default function CookieBanner() {
   };
 
   const declineCookies = () => {
-    localStorage.setItem('cookie-consent', 'declined');
-    setShowBanner(false);
+    try {
+      localStorage.setItem('cookie-consent', 'declined');
+    } catch {}
+    if (bannerRef.current) {
+      bannerRef.current.style.display = 'none';
+    }
   };
 
-  if (!showBanner) return null;
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-black/95 border-t border-white/10 backdrop-blur-lg">
+    <div ref={bannerRef} className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-black/95 border-t border-white/10 backdrop-blur-lg">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex-1 text-sm text-gray-300">
           <p>

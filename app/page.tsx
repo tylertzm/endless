@@ -204,32 +204,21 @@ export default function Home() {
         if (blob) {
           const url = URL.createObjectURL(blob);
           
-          // Check if mobile device
-          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                          ('ontouchstart' in window && window.innerWidth <= 768);
+          // Create download link that works on both mobile and desktop
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${cardData.name || 'business-card'}-qr.png`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
           
-          if (isMobile) {
-            // On mobile, open in new tab for manual saving
-            const newWindow = window.open(url, '_blank');
-            if (!newWindow) {
-              // If popup blocked, show instructions
-              alert('Please allow popups for this site, or copy this URL to save the image: ' + url);
-            } else {
-              alert('Image opened in new tab. Long-press the image to save it to your device.');
-            }
-          } else {
-            // Desktop: use download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${cardData.name || 'business-card'}-qr.png`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
+          // Small delay before cleanup to ensure download starts
+          setTimeout(() => {
             document.body.removeChild(link);
-            console.log('QR code downloaded successfully');
-          }
+            URL.revokeObjectURL(url);
+          }, 100);
           
-          URL.revokeObjectURL(url);
+          console.log('QR code download initiated');
         } else {
           alert('Failed to generate QR code image. Please try again.');
         }
