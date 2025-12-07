@@ -19,7 +19,6 @@ interface CardData {
   email: string;
   website: string;
   address: string;
-  photo: string;
   socials: SocialLink[];
   style?: 'kosma';
 }
@@ -91,8 +90,6 @@ function CardContent() {
     vCardData += `EMAIL:${data.email}\n`;
     vCardData += `URL:${data.website}\n`;
     vCardData += `ADR:;;${(data.address || '').replace(/\n/g, ';')};;;;\n`;
-    
-    // Note: Photo is excluded from QR data, so it won't be here unless we fetch it separately
     
     if (data.socials) {
       data.socials.forEach(social => {

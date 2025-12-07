@@ -20,8 +20,6 @@ interface CardData {
   email: string;
   website: string;
   address: string;
-  photo: string;
-  logo: string;
   socials: SocialLink[];
   style?: 'kosma';
 }
@@ -34,8 +32,6 @@ const STEP_KEYS = [
   "email",
   "website",
   "address",
-  "photo",
-  "logo",
   "socials",
   "preview",
 ];
@@ -51,8 +47,6 @@ export default function Home() {
     email: "",
     website: "",
     address: "",
-    photo: "",
-    logo: "",
     socials: [],
   });
 
@@ -124,9 +118,6 @@ export default function Home() {
     const firstName = nameParts.slice(0, -1).join(' ') || nameParts[0];
     const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
     let vCardData = 'BEGIN:VCARD\nVERSION:3.0\nN:' + lastName + ';' + firstName + ';;;\nFN:' + cardData.name + '\nTITLE:' + cardData.title + '\nORG:' + cardData.company + '\nTEL:' + cardData.phone + '\nEMAIL:' + cardData.email + '\nURL:' + cardData.website + '\nADR:' + cardData.address.replace(/\n/g, ';');
-    if (cardData.photo) {
-      vCardData += '\nPHOTO;ENCODING=b;TYPE=JPEG:' + cardData.photo.split(',')[1];
-    }
 
     cardData.socials.forEach(social => {
       let url = '';
@@ -168,7 +159,7 @@ export default function Home() {
       // Generate Master QR Code for the back of the card
       // This encodes the card data into a URL parameter for the website to render
       // We exclude heavy assets like photos from the QR code to keep the URL short
-      const exportData = { ...cardData, style: cardStyle, photo: '' };
+      const exportData = { ...cardData, style: cardStyle };
       const encodedData = btoa(JSON.stringify(exportData));
       const uuid = crypto.randomUUID();
       // Use the production domain for the QR code
@@ -212,15 +203,33 @@ export default function Home() {
       canvas.toBlob((blob) => {
         if (blob) {
           const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${cardData.name || 'business-card'}-qr.png`;
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          
+          // Check if mobile device
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                          ('ontouchstart' in window && window.innerWidth <= 768);
+          
+          if (isMobile) {
+            // On mobile, open in new tab for manual saving
+            const newWindow = window.open(url, '_blank');
+            if (!newWindow) {
+              // If popup blocked, show instructions
+              alert('Please allow popups for this site, or copy this URL to save the image: ' + url);
+            } else {
+              alert('Image opened in new tab. Long-press the image to save it to your device.');
+            }
+          } else {
+            // Desktop: use download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${cardData.name || 'business-card'}-qr.png`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log('QR code downloaded successfully');
+          }
+          
           URL.revokeObjectURL(url);
-          console.log('QR code downloaded successfully');
         } else {
           alert('Failed to generate QR code image. Please try again.');
         }
@@ -235,7 +244,7 @@ export default function Home() {
 
   const copyCardLink = async () => {
     // Exclude heavy assets like photos from the URL to keep it short
-    const exportData = { ...cardData, style: cardStyle, photo: '' };
+    const exportData = { ...cardData, style: cardStyle };
     const encodedData = btoa(JSON.stringify(exportData));
     const uuid = crypto.randomUUID();
     // Use the production domain
@@ -270,30 +279,6 @@ export default function Home() {
   };
 
   // handleAddPlatform removed: platform chips now open a popup directly
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        setCardData(prev => ({ ...prev, photo: base64 }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        setCardData(prev => ({ ...prev, logo: base64 }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const nextStyle = () => setStyleIndex((i) => (i + 1) % styles.length);
   const prevStyle = () => setStyleIndex((i) => (i - 1 + styles.length) % styles.length);
@@ -964,7 +949,7 @@ export default function Home() {
           <div className="question-card">
                 {/* old in-card progress removed — header progress bar is used instead */}
 
-              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && steps[currentStep] !== 'photo' && (
+              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && (
                 <div>
                   <h1 className="text-2xl font-bold mb-3">{(() => {
                     const k = steps[currentStep];
@@ -976,8 +961,6 @@ export default function Home() {
                       case 'email': return 'Email address';
                       case 'website': return 'Company Website';
                       case 'address': return 'Address';
-                      case 'photo': return 'Upload your photo';
-                      case 'logo': return 'Upload company logo';
                       default: return '';
                     }
                   })()}</h1>
@@ -991,37 +974,6 @@ export default function Home() {
                       autoFocus
                     />
                   </div>
-                </div>
-              )}
-
-              {steps[currentStep] === 'photo' && (
-                <div>
-                  <div className="question">Upload a profile photo (optional)</div>
-                  <div className="small">This photo will only be included in exported contact vCards for easy importing into address books.</div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="input"
-                  />
-                  {cardData.photo && (
-                    <div className="mt-2">
-                      <img src={cardData.photo} alt="Preview" className="w-16 h-16 object-cover rounded" />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {steps[currentStep] === 'logo' && (
-                <div>
-                  <div className="question">Upload company logo (optional)</div>
-                  <div className="small">This logo will appear at the top of your exported QR code PNG for branding.</div>
-                  <input type="file" accept="image/*" onChange={handleLogoChange} className="input mt-4" />
-                  {cardData.logo && (
-                    <div className="mt-2">
-                      <img src={cardData.logo} alt="Logo Preview" className="w-16 h-16 object-contain" />
-                    </div>
-                  )}
                 </div>
               )}
 

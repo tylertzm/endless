@@ -137,7 +137,6 @@ export default function Impressum() {
                 </p>
                 <ul className="list-disc list-inside text-gray-300 mt-2 ml-4 space-y-1 text-sm sm:text-base">
                   <li>Ihre eingegebenen Visitenkartendaten (Name, E-Mail, Telefon, Adresse, Firma, etc.)</li>
-                  <li>Hochgeladene Bilder (Foto, Logo) in Base64-Format</li>
                   <li>Social-Media-Links</li>
                   <li>Ihre Cookie-Einwilligung</li>
                 </ul>
