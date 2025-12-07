@@ -1178,16 +1178,31 @@ export default function Home() {
                   onTouchStart={(e) => {
                     if (zoomed) {
                       const touch = e.touches[0];
-                      touchStartRef.current = { x: touch.clientX - panX, y: touch.clientY - panY };
+                      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
                     }
                   }}
                   onTouchMove={(e) => {
                     if (zoomed && touchStartRef.current) {
                       e.preventDefault();
                       const touch = e.touches[0];
-                      setPanX(touch.clientX - touchStartRef.current.x);
-                      setPanY(touch.clientY - touchStartRef.current.y);
+                      setPanX(panX + (touchStartRef.current.x - touch.clientX));
+                      setPanY(panY + (touch.clientY - touchStartRef.current.y));
                     }
+                  }}
+                  onMouseDown={(e) => {
+                    if (zoomed) {
+                      touchStartRef.current = { x: e.clientX, y: e.clientY };
+                    }
+                  }}
+                  onMouseMove={(e) => {
+                    if (zoomed && touchStartRef.current) {
+                      e.preventDefault();
+                      setPanX(panX + (touchStartRef.current.x - e.clientX));
+                      setPanY(panY + (e.clientY - touchStartRef.current.y));
+                    }
+                  }}
+                  onMouseUp={() => {
+                    touchStartRef.current = null;
                   }}
                   onTouchEnd={() => {
                     touchStartRef.current = null;
