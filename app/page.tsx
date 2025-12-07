@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect, useRef } from "react";
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
@@ -57,14 +58,15 @@ export default function Home() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [styleIndex, setStyleIndex] = useState(0);
-  const [gradientStart, setGradientStart] = useState("#3b82f6");
-  const [gradientEnd, setGradientEnd] = useState("#1e40af");
   const [startX, setStartX] = useState<number | null>(null);
   const [platformPopup, setPlatformPopup] = useState<{ platform: string | null; platformName?: string; handle: string } | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clickCountRef = useRef(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [steps] = useState<string[]>(STEP_KEYS);
 
   // Load from localStorage on mount
@@ -163,8 +165,8 @@ export default function Home() {
   const exportAsPNG = async () => {
     // Generate Master QR Code for the back of the card
     // This encodes the card data into a URL parameter for the website to render
-    // We exclude heavy assets like photos/logos from the QR code to keep the URL short
-    const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
+    // We exclude heavy assets like photos from the QR code to keep the URL short
+    const exportData = { ...cardData, style: cardStyle, photo: '' };
     const encodedData = btoa(JSON.stringify(exportData));
     const uuid = crypto.randomUUID();
     // Use the production domain for the QR code
@@ -227,8 +229,8 @@ export default function Home() {
   };
 
   const copyCardLink = async () => {
-    // Exclude heavy assets like photos/logos from the URL to keep it short
-    const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
+    // Exclude heavy assets like photos from the URL to keep it short
+    const exportData = { ...cardData, style: cardStyle, photo: '' };
     const encodedData = btoa(JSON.stringify(exportData));
     const uuid = crypto.randomUUID();
     // Use the production domain
@@ -774,6 +776,8 @@ export default function Home() {
           letter-spacing: 0.5px;
           color: #888888;
           font-family: 'Inter', sans-serif;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-topo-symbol-container {
@@ -814,6 +818,8 @@ export default function Home() {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-back {
@@ -845,6 +851,8 @@ export default function Home() {
           font-weight: 600;
           max-width: 80%;
           letter-spacing: -1px;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-signature {
@@ -888,6 +896,8 @@ export default function Home() {
           font-size: clamp(6px, 1.4vw, 12px);
           line-height: 1.6;
           color: #1F1F1F;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-contact-details strong {
@@ -945,7 +955,7 @@ export default function Home() {
           <div className="question-card">
                 {/* old in-card progress removed — header progress bar is used instead */}
 
-              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && steps[currentStep] !== 'photo' && steps[currentStep] !== 'logo' && (
+              {steps[currentStep] !== 'socials' && steps[currentStep] !== 'preview' && steps[currentStep] !== 'photo' && (
                 <div>
                   <h1 className="text-2xl font-bold mb-3">{(() => {
                     const k = steps[currentStep];
@@ -957,8 +967,8 @@ export default function Home() {
                       case 'email': return 'Email address';
                       case 'website': return 'Company Website';
                       case 'address': return 'Address';
-                      case 'logo': return 'Upload company logo';
                       case 'photo': return 'Upload your photo';
+                      case 'logo': return 'Upload company logo';
                       default: return '';
                     }
                   })()}</h1>
@@ -978,7 +988,7 @@ export default function Home() {
               {steps[currentStep] === 'photo' && (
                 <div>
                   <div className="question">Upload a profile photo (optional)</div>
-                  <div className="small">Select an image file to include in your contact card.</div>
+                  <div className="small">This photo will only be included in exported contact vCards for easy importing into address books.</div>
                   <input
                     type="file"
                     accept="image/*"
@@ -996,7 +1006,7 @@ export default function Home() {
               {steps[currentStep] === 'logo' && (
                 <div>
                   <div className="question">Upload company logo (optional)</div>
-                  <div className="small">Logo will appear in center of Kosma style.</div>
+                  <div className="small">This logo will appear at the top of your exported QR code PNG for branding.</div>
                   <input type="file" accept="image/*" onChange={handleLogoChange} className="input mt-4" />
                   {cardData.logo && (
                     <div className="mt-2">
@@ -1010,92 +1020,85 @@ export default function Home() {
                 <div>
                   <div className="question">Add social links (optional)</div>
                   <div className="mt-4 space-y-3">
-                    {/* existing socials are represented by chips below; inline inputs removed to avoid duplication */}
-                    
                     {/* platform selection handled in modal popup */}
 
                     <div className="mt-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                          {cardData.socials.length === 0 ? (
-                            <div className="text-sm text-gray-300 mb-2">Choose a platform to get started.</div>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {cardData.socials.map((social, idx) => (
-                                <div key={idx} className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded">
-                                  <span className="text-sm">{social.platform}</span>
-                                  <button onClick={() => removeSocial(idx)} className="btn-back text-xs">×</button>
-                                </div>
-                              ))}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
+                        {['Instagram','LinkedIn','X','GitHub','Facebook','TikTok','YouTube','Other'].map((plat) => {
+                          const existing = cardData.socials.find(s => s.platform === plat);
+                          const selected = !!existing;
+                          const label = plat === 'LinkedIn' ? 'in' : plat === 'Instagram' ? 'IG' : plat === 'GitHub' ? 'gh' : plat === 'YouTube' ? 'yt' : plat === 'TikTok' ? 'tt' : plat === 'Facebook' ? 'fb' : plat === 'X' ? 'X' : plat === 'Other' ? '+' : plat;
+                          return (
+                            <div key={plat} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                              <button
+                                onClick={() => setPlatformPopup({ platform: plat, handle: existing?.handle || '', platformName: plat === 'Other' ? '' : undefined })}
+                                style={{ padding: '10px', borderRadius: '10px', fontSize: '13px', background: selected ? '#ff8c00' : 'transparent', color: selected ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.06)' }}
+                                title={plat}
+                              >
+                                {label}
+                              </button>
+                              {selected && (
+                                <div style={{ marginTop: '6px', fontSize: '12px', color: '#ccc', maxWidth: '80px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{existing?.handle}</div>
+                              )}
                             </div>
-                          )}
-                        </div>
-
-                        <div className="mt-4">
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
-                            {['Instagram','LinkedIn','X','GitHub','Facebook','TikTok','YouTube','Other'].map((plat) => {
-                              const existing = cardData.socials.find(s => s.platform === plat);
-                              const selected = !!existing;
-                              const label = plat === 'LinkedIn' ? 'in' : plat === 'Instagram' ? 'IG' : plat === 'GitHub' ? 'gh' : plat === 'YouTube' ? 'yt' : plat === 'TikTok' ? 'tt' : plat === 'Facebook' ? 'fb' : plat === 'X' ? 'X' : plat === 'Other' ? '+' : plat;
-                              return (
-                                <div key={plat} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                  <button
-                                    onClick={() => setPlatformPopup({ platform: plat, handle: existing?.handle || '', platformName: plat === 'Other' ? '' : undefined })}
-                                    style={{ padding: '10px', borderRadius: '10px', fontSize: '13px', background: selected ? '#ff8c00' : 'transparent', color: selected ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.06)' }}
-                                    title={plat}
-                                  >
-                                    {label}
-                                  </button>
-                                  {selected && (
-                                    <div style={{ marginTop: '6px', fontSize: '12px', color: '#ccc', maxWidth: '80px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{existing?.handle}</div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {platformPopup && (
-                            <div role="dialog" aria-modal="true" style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 120 }}>
-                              <div style={{ background: 'rgba(10,10,10,0.98)', padding: '18px', borderRadius: '12px', width: 'min(520px, 94%)' }}>
-                                <div style={{ fontWeight: 700, marginBottom: 8 }}>{platformPopup.platform === 'Other' ? 'Add platform' : `Edit ${platformPopup.platform}`}</div>
-                                {platformPopup.platform === 'Other' && (
-                                  <input
-                                    className="input"
-                                    value={platformPopup.platformName || ''}
-                                    onChange={(e) => setPlatformPopup(p => p ? { ...p, platformName: e.target.value } : p)}
-                                    placeholder="Platform name"
-                                  />
-                                )}
-                                <input
-                                  className="input"
-                                  value={platformPopup.handle}
-                                  onChange={(e) => setPlatformPopup(p => p ? { ...p, handle: e.target.value } : p)}
-                                  placeholder="Handle or URL"
-                                  autoFocus
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
-                                  <button onClick={() => {
-                                    const plat = platformPopup.platform === 'Other' ? (platformPopup.platformName || 'Other') : (platformPopup.platform || 'Other');
-                                    const handle = (platformPopup.handle || '').trim();
-                                    setCardData(prev => {
-                                      const others = prev.socials.filter(s => s.platform !== plat);
-                                      if (handle.length > 0) return { ...prev, socials: [...others, { platform: plat, handle, label: plat }] };
-                                      return { ...prev, socials: others };
-                                    });
-                                    setPlatformPopup(null);
-                                  }} className="btn-next">Save</button>
-                                  <button onClick={() => {
-                                    const plat = platformPopup.platform === 'Other' ? (platformPopup.platformName || 'Other') : (platformPopup.platform || 'Other');
-                                    setCardData(prev => ({ ...prev, socials: prev.socials.filter(s => s.platform !== plat) }));
-                                    setPlatformPopup(null);
-                                  }} className="btn-back">Remove</button>
-                                  <button onClick={() => setPlatformPopup(null)} className="btn-back">Cancel</button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                          );
+                        })}
                       </div>
+
+                      {cardData.socials.length > 0 && (
+                        <div className="mt-6">
+                          <div className="text-sm text-gray-300 mb-3">Selected social links:</div>
+                          <div className="flex flex-wrap gap-2">
+                            {cardData.socials.map((social, idx) => (
+                              <div key={idx} className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded">
+                                <span className="text-sm">{social.platform}: {social.handle}</span>
+                                <button onClick={() => removeSocial(idx)} className="btn-back text-xs">×</button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {platformPopup && (
+                        <div role="dialog" aria-modal="true" style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 120 }}>
+                          <div style={{ background: 'rgba(10,10,10,0.98)', padding: '18px', borderRadius: '12px', width: 'min(520px, 94%)' }}>
+                            <div style={{ fontWeight: 700, marginBottom: 8 }}>{platformPopup.platform === 'Other' ? 'Add platform' : `Edit ${platformPopup.platform}`}</div>
+                            {platformPopup.platform === 'Other' && (
+                              <input
+                                className="input"
+                                value={platformPopup.platformName || ''}
+                                onChange={(e) => setPlatformPopup(p => p ? { ...p, platformName: e.target.value } : p)}
+                                placeholder="Platform name"
+                              />
+                            )}
+                            <input
+                              className="input"
+                              value={platformPopup.handle}
+                              onChange={(e) => setPlatformPopup(p => p ? { ...p, handle: e.target.value } : p)}
+                              placeholder="Handle or URL"
+                              autoFocus
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+                              <button onClick={() => {
+                                const plat = platformPopup.platform === 'Other' ? (platformPopup.platformName || 'Other') : (platformPopup.platform || 'Other');
+                                const handle = (platformPopup.handle || '').trim();
+                                setCardData(prev => {
+                                  const others = prev.socials.filter(s => s.platform !== plat);
+                                  if (handle.length > 0) return { ...prev, socials: [...others, { platform: plat, handle, label: plat }] };
+                                  return { ...prev, socials: others };
+                                });
+                                setPlatformPopup(null);
+                              }} className="btn-next">Save</button>
+                              <button onClick={() => {
+                                const plat = platformPopup.platform === 'Other' ? (platformPopup.platformName || 'Other') : (platformPopup.platform || 'Other');
+                                setCardData(prev => ({ ...prev, socials: prev.socials.filter(s => s.platform !== plat) }));
+                                setPlatformPopup(null);
+                              }} className="btn-back">Remove</button>
+                              <button onClick={() => setPlatformPopup(null)} className="btn-back">Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1163,24 +1166,47 @@ export default function Home() {
                         clearTimeout(clickTimerRef.current);
                       }
                       setZoomed(!zoomed);
+                      setPanX(0);
+                      setPanY(0);
                       clickCountRef.current = 0;
                     }
-                  }}>
-                    <div className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}>
+                  }}
+                  onTouchStart={(e) => {
+                    if (zoomed) {
+                      const touch = e.touches[0];
+                      touchStartRef.current = { x: touch.clientX - panX, y: touch.clientY - panY };
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (zoomed && touchStartRef.current) {
+                      e.preventDefault();
+                      const touch = e.touches[0];
+                      setPanX(touch.clientX - touchStartRef.current.x);
+                      setPanY(touch.clientY - touchStartRef.current.y);
+                    }
+                  }}
+                  onTouchEnd={() => {
+                    touchStartRef.current = null;
+                  }}
+                  >
+                    <div 
+                      className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}
+                      style={zoomed ? { 
+                        transform: `scale(1.5) ${flipped ? 'rotateY(180deg)' : ''} translate(${panX}px, ${panY}px)` 
+                      } : undefined}
+                    >
                       <div className="kosma-card-face kosma-front">
                         <div className="kosma-front-content">
-                          <div className="kosma-brand-header">
-                            {cardData.company || "Your Company"}<br />
-                          </div>
+                          {cardData.company && (
+                            <div className="kosma-brand-header">
+                              {cardData.company}<br />
+                            </div>
+                          )}
                           <div className="kosma-topo-symbol-container">
-                            {cardData.logo ? (
-                              <img src={cardData.logo} alt="Logo" style={{ width: 'clamp(80px, 24vw, 200px)', height: 'auto', maxHeight: '180px', objectFit: 'contain' }} />
-                            ) : (
-                              <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
-                            )}
+                            <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
                           </div>
                           <div className="kosma-logo-text-bottom">
-                            <span>{cardData.name || "Your Name"}</span>
+                            {cardData.name && <span>{cardData.name}</span>}
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
                               <path d="M12 2L2 22H22L12 2Z" fill="white"/>
                             </svg>
@@ -1194,10 +1220,10 @@ export default function Home() {
                           </div>
                           <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
                             <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF', textAlign: 'justify' }}>
-                              <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
-                              <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
-                              <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
-                              <p><strong>Address:</strong> {cardData.address || "Not provided"}</p>
+                              {cardData.phone && <p><strong>Phone:</strong> {cardData.phone}</p>}
+                              {cardData.email && <p><strong>Email:</strong> {cardData.email}</p>}
+                              {cardData.website && <p><strong>Website:</strong> {cardData.website}</p>}
+                              {cardData.address && <p><strong>Address:</strong> {cardData.address}</p>}
                             </div>
                             <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF', textAlign: 'justify' }}>
                               {cardData.socials.length > 0 && (
@@ -1218,8 +1244,8 @@ export default function Home() {
                               <div className="kosma-swatch kosma-s4"></div>
                             </div>
                             <div className="kosma-contact-details">
-                              <strong>{cardData.name || "Your Name"}</strong>
-                              {cardData.company || "Your Company"}
+                              {cardData.name && <strong>{cardData.name}</strong>}
+                              {cardData.company && <div>{cardData.company}</div>}
                             </div>
                           </div>
                         </div>
@@ -1231,6 +1257,13 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="fixed bottom-0 left-0 right-0 bg-transparent text-white/50 py-2 text-center text-xs z-[100]">
+          <a href="/impressum" className="hover:text-white/80 transition-colors">
+            Impressum
+          </a>
+        </footer>
     </>
   );
 }                

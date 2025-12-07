@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useMemo, Suspense, useState, useRef } from 'react';
+import Head from 'next/head';
 import { useSearchParams, useParams } from 'next/navigation';
 
 interface SocialLink {
@@ -19,7 +20,6 @@ interface CardData {
   website: string;
   address: string;
   photo: string;
-  logo: string;
   socials: SocialLink[];
   style?: 'kosma';
 }
@@ -47,9 +47,12 @@ function CardContent() {
 
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
 
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clickCountRef = useRef(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (data && params.id) {
@@ -72,8 +75,6 @@ function CardContent() {
   }, [data, params.id]);
 
   if (!data) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
-
-  const cardStyle = data.style || 'kosma';
 
   const saveContact = () => {
     if (!data) return;
@@ -123,7 +124,23 @@ function CardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-sans overflow-hidden p-4">
+    <>
+      <Head>
+        <title>{data.name ? `${data.name}'s Business Card` : 'Business Card'}</title>
+        <meta name="description" content={`${data.company || 'Company'} - ${data.title || 'Professional'} - Digital Business Card`} />
+        <meta property="og:title" content={data.name ? `${data.name}'s Business Card` : 'Business Card'} />
+        <meta property="og:description" content={`${data.company || 'Company'} - ${data.title || 'Professional'}`} />
+        <meta property="og:image" content="/endless.webp" />
+        <meta property="og:image:width" content="400" />
+        <meta property="og:image:height" content="400" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={data.name ? `${data.name}'s Business Card` : 'Business Card'} />
+        <meta name="twitter:description" content={`${data.company || 'Company'} - ${data.title || 'Professional'}`} />
+        <meta name="twitter:image" content="/endless.webp" />
+      </Head>
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-sans overflow-hidden p-4">
       <style jsx global>{`
         /* KOSMA Card Styles */
         .kosma-card-wrapper {
@@ -178,6 +195,8 @@ function CardContent() {
           letter-spacing: 0.5px;
           color: #888888;
           font-family: 'Inter', sans-serif;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-topo-symbol-container {
@@ -218,6 +237,8 @@ function CardContent() {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-back {
@@ -249,6 +270,8 @@ function CardContent() {
           font-weight: 600;
           max-width: 80%;
           letter-spacing: -1px;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-info-grid {
@@ -287,6 +310,8 @@ function CardContent() {
           font-size: clamp(6px, 1.4vw, 12px);
           line-height: 1.6;
           color: #1F1F1F;
+          z-index: 10;
+          position: relative;
         }
 
         .kosma-contact-details strong {
@@ -340,51 +365,78 @@ function CardContent() {
 
       <div className="relative group cursor-pointer" onClick={saveContact}>
         <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className={`kosma-card-wrapper prompt-animation`} onClick={(e) => {
-          e.stopPropagation();
-          clickCountRef.current++;
-          if (clickCountRef.current === 1) {
-            clickTimerRef.current = setTimeout(() => {
-              setFlipped(!flipped);
+        <div 
+          className={`kosma-card-wrapper prompt-animation`} 
+          onClick={(e) => {
+            e.stopPropagation();
+            clickCountRef.current++;
+            if (clickCountRef.current === 1) {
+              clickTimerRef.current = setTimeout(() => {
+                setFlipped(!flipped);
+                clickCountRef.current = 0;
+              }, 300);
+            } else if (clickCountRef.current === 2) {
+              if (clickTimerRef.current) {
+                clearTimeout(clickTimerRef.current);
+              }
+              setZoomed(!zoomed);
+              setPanX(0);
+              setPanY(0);
               clickCountRef.current = 0;
-            }, 300);
-          } else if (clickCountRef.current === 2) {
-            if (clickTimerRef.current) {
-              clearTimeout(clickTimerRef.current);
             }
-            setZoomed(!zoomed);
-            clickCountRef.current = 0;
-          }
-        }}>
-          <div className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}>
+          }}
+          onTouchStart={(e) => {
+            if (zoomed) {
+              const touch = e.touches[0];
+              touchStartRef.current = { x: touch.clientX - panX, y: touch.clientY - panY };
+            }
+          }}
+          onTouchMove={(e) => {
+            if (zoomed && touchStartRef.current) {
+              e.preventDefault();
+              const touch = e.touches[0];
+              setPanX(touch.clientX - touchStartRef.current.x);
+              setPanY(touch.clientY - touchStartRef.current.y);
+            }
+          }}
+          onTouchEnd={() => {
+            touchStartRef.current = null;
+          }}
+        >
+          <div 
+            className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}
+            style={zoomed ? { 
+              transform: `scale(1.5) ${flipped ? 'rotateY(180deg)' : ''} translate(${panX}px, ${panY}px)` 
+            } : undefined}
+          >
             <div className="kosma-card-face kosma-front">
               <div className="kosma-front-content">
-                <div className="kosma-brand-header">
-                  {data.company || "Your Company"}<br />
-                </div>
+                {data.company && (
+                  <div className="kosma-brand-header">
+                    {data.company}<br />
+                  </div>
+                )}
                 <div className="kosma-topo-symbol-container">
-                  {data.logo ? (
-                    <img src={data.logo} alt="Logo" style={{ width: 'clamp(80px, 24vw, 200px)', height: 'auto', maxHeight: '180px', objectFit: 'contain' }} />
-                  ) : (
-                    <div className="kosma-topo-k">{data.name ? data.name.charAt(0).toUpperCase() : "K"}</div>
-                  )}
+                  <div className="kosma-topo-k">{data.name ? data.name.charAt(0).toUpperCase() : "K"}</div>
                 </div>
                 <div className="kosma-logo-text-bottom">
-                  <span>{data.name || "Your Name"}</span>
+                  {data.name && <span>{data.name}</span>}
                 </div>
               </div>
             </div>
             <div className="kosma-card-face kosma-back">
               <div className="kosma-back-content">
-                <div className="kosma-headline-large">
-                  {data.title || "Your Title"}
-                </div>
+                {data.title && (
+                  <div className="kosma-headline-large">
+                    {data.title}
+                  </div>
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(8px, 2vw, 16px)', fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
                   <div style={{ textAlign: 'justify' }}>
-                    <p><strong>Phone:</strong> {data.phone || "Not provided"}</p>
-                    <p><strong>Email:</strong> {data.email || "Not provided"}</p>
-                    <p><strong>Website:</strong> {data.website || "Not provided"}</p>
-                    <p><strong>Address:</strong> {data.address || "Not provided"}</p>
+                    {data.phone && <p><strong>Phone:</strong> {data.phone}</p>}
+                    {data.email && <p><strong>Email:</strong> {data.email}</p>}
+                    {data.website && <p><strong>Website:</strong> {data.website}</p>}
+                    {data.address && <p><strong>Address:</strong> {data.address}</p>}
                   </div>
                   <div style={{ textAlign: 'justify' }}>
                     {data.socials.length > 0 && (
@@ -405,8 +457,8 @@ function CardContent() {
                     <div className="kosma-swatch kosma-s4"></div>
                   </div>
                   <div className="kosma-contact-details">
-                    <strong>{data.name || "Your Name"}</strong>
-                    {data.company || "Your Company"}
+                    {data.name && <strong>{data.name}</strong>}
+                    {data.company && <div>{data.company}</div>}
                   </div>
                 </div>
               </div>
@@ -430,7 +482,15 @@ function CardContent() {
         </svg>
         Save Contact
       </button>
+
+      {/* Footer */}
+      <footer className="mt-12 text-white/50 py-4 text-center text-xs">
+        <a href="/impressum" className="hover:text-white/80 transition-colors">
+          Impressum
+        </a>
+      </footer>
     </div>
+    </>
   );
 }
 
