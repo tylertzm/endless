@@ -163,38 +163,40 @@ export default function Home() {
   };
 
   const exportAsPNG = async () => {
-    // Generate Master QR Code for the back of the card
-    // This encodes the card data into a URL parameter for the website to render
-    // We exclude heavy assets like photos from the QR code to keep the URL short
-    const exportData = { ...cardData, style: cardStyle, photo: '' };
-    const encodedData = btoa(JSON.stringify(exportData));
-    const uuid = crypto.randomUUID();
-    // Use the production domain for the QR code
-    const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
-    const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
-
-    // Create a temporary div for the QR code image with logo
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    tempDiv.style.top = '-9999px';
-    tempDiv.style.width = '400px';
-    tempDiv.style.height = '550px';
-    tempDiv.style.background = 'black';
-    tempDiv.style.display = 'flex';
-    tempDiv.style.flexDirection = 'column';
-    tempDiv.style.alignItems = 'center';
-    tempDiv.style.justifyContent = 'center';
-    tempDiv.style.padding = '20px';
-    tempDiv.innerHTML = `
-      <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 20px; filter: brightness(0) invert(1);" />
-      <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 15px; filter: brightness(0.8) contrast(1.2) saturate(1.5);" />
-      <div style="font-family: Arial, sans-serif; font-size: 5px; color: #FFFFFF; opacity: 0.7; text-align: center; word-break: break-all; padding: 0 10px;">${masterUrl}</div>
-    `;
-
-    document.body.appendChild(tempDiv);
-
+    console.log('Starting QR code export...');
     try {
+      // Generate Master QR Code for the back of the card
+      // This encodes the card data into a URL parameter for the website to render
+      // We exclude heavy assets like photos from the QR code to keep the URL short
+      const exportData = { ...cardData, style: cardStyle, photo: '' };
+      const encodedData = btoa(JSON.stringify(exportData));
+      const uuid = crypto.randomUUID();
+      // Use the production domain for the QR code
+      const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
+      console.log('Generating QR code for URL:', masterUrl);
+      const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
+      console.log('QR code generated successfully');
+
+      // Create a temporary div for the QR code image
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '400px';
+      tempDiv.style.height = '550px';
+      tempDiv.style.background = 'black';
+      tempDiv.style.display = 'flex';
+      tempDiv.style.flexDirection = 'column';
+      tempDiv.style.alignItems = 'center';
+      tempDiv.style.justifyContent = 'center';
+      tempDiv.style.padding = '20px';
+      tempDiv.innerHTML = `
+        <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 15px; filter: brightness(0.8) contrast(1.2) saturate(1.5);" />
+        <div style="font-family: Arial, sans-serif; font-size: 5px; color: #FFFFFF; opacity: 0.7; text-align: center; word-break: break-all; padding: 0 10px;">${masterUrl}</div>
+      `;
+
+      document.body.appendChild(tempDiv);
+
       const canvas = await html2canvas(tempDiv, {
         width: 400,
         height: 550,
@@ -218,13 +220,16 @@ export default function Home() {
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
+          console.log('QR code downloaded successfully');
+        } else {
+          alert('Failed to generate QR code image. Please try again.');
         }
       }, 'image/png');
-    } catch (error) {
-      console.error('Error exporting PNG:', error);
-      alert('Failed to export PNG. Please try again.');
-    } finally {
+
       document.body.removeChild(tempDiv);
+    } catch (error) {
+      console.error('Error exporting QR code:', error);
+      alert('Failed to export QR code. Please check the console for details.');
     }
   };
 
