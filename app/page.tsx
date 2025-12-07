@@ -63,7 +63,6 @@ export default function Home() {
   const [platformPopup, setPlatformPopup] = useState<{ platform: string | null; platformName?: string; handle: string } | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
-  const [qrColor, setQrColor] = useState("#C0C0C0");
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clickCountRef = useRef(0);
   const [steps] = useState<string[]>(STEP_KEYS);
@@ -170,7 +169,7 @@ export default function Home() {
     const uuid = crypto.randomUUID();
     // Use the production domain for the QR code
     const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
-    const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M', color: { dark: qrColor, light: '#FFFFFF' } });
+    const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
 
     // Create a temporary div for the QR code image with logo
     const tempDiv = document.createElement('div');
@@ -178,16 +177,17 @@ export default function Home() {
     tempDiv.style.left = '-9999px';
     tempDiv.style.top = '-9999px';
     tempDiv.style.width = '400px';
-    tempDiv.style.height = '500px';
-    tempDiv.style.background = 'white';
+    tempDiv.style.height = '550px';
+    tempDiv.style.background = 'black';
     tempDiv.style.display = 'flex';
     tempDiv.style.flexDirection = 'column';
     tempDiv.style.alignItems = 'center';
     tempDiv.style.justifyContent = 'center';
     tempDiv.style.padding = '20px';
     tempDiv.innerHTML = `
-      <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 20px;" />
-      <img src="${masterQrDataUrl}" style="width: 360px; height: 360px; display: block;" />
+      <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 20px; filter: brightness(0) invert(1);" />
+      <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 15px; filter: brightness(0.8) contrast(1.2) saturate(1.5);" />
+      <div style="font-family: Arial, sans-serif; font-size: 12px; color: #FFFFFF; opacity: 0.7; text-align: center; word-break: break-all; padding: 0 10px;">${masterUrl}</div>
     `;
 
     document.body.appendChild(tempDiv);
@@ -195,8 +195,8 @@ export default function Home() {
     try {
       const canvas = await html2canvas(tempDiv, {
         width: 400,
-        height: 500,
-        backgroundColor: '#FFFFFF',
+        height: 550,
+        backgroundColor: '#000000',
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -223,6 +223,23 @@ export default function Home() {
       alert('Failed to export PNG. Please try again.');
     } finally {
       document.body.removeChild(tempDiv);
+    }
+  };
+
+  const copyCardLink = async () => {
+    // Exclude heavy assets like photos/logos from the URL to keep it short
+    const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
+    const encodedData = btoa(JSON.stringify(exportData));
+    const uuid = crypto.randomUUID();
+    // Use the production domain
+    const url = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
+    
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Card link copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy URL: ', err);
+      alert('Failed to copy URL. Please copy manually: ' + url);
     }
   };
 
@@ -1088,13 +1105,10 @@ export default function Home() {
                 <div>
                   <div className="question">✨ Done!</div>
                   <div className="small">This is the final preview of your digital business card. Export when ready.</div>
-                  <div className="mt-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">QR Code Color:</label>
-                    <input type="color" value={qrColor} onChange={(e) => setQrColor(e.target.value)} className="w-12 h-8 border border-gray-300 rounded" />
-                  </div>
                   <div className="mt-4 flex gap-2 flex-wrap">
                     <button onClick={exportAsVCard} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Export as Contact</button>
                     <button onClick={exportAsPNG} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Save QR Code</button>
+                    <button onClick={copyCardLink} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Copy Link</button>
                   </div>
                 </div>
               )}
