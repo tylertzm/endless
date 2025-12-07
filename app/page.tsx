@@ -182,8 +182,9 @@ export default function Home() {
       tempDiv.style.justifyContent = 'center';
       tempDiv.style.padding = '20px';
       tempDiv.innerHTML = `
-        <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 15px; filter: brightness(0.8) contrast(1.2) saturate(1.5);" />
-        <div style="font-family: Arial, sans-serif; font-size: 5px; color: #FFFFFF; opacity: 0.7; text-align: center; word-break: break-all; padding: 0 10px;">${masterUrl}</div>
+        <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 16px; filter: brightness(0) invert(1);" />
+        <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 12px; filter: brightness(0.9) contrast(1.2) saturate(1.2);" />
+        <div style="font-family: Arial, sans-serif; font-size: 10px; color: #FFFFFF; opacity: 0.9; text-align: center; word-break: break-all; padding: 0 12px;">${masterUrl}</div>
       `;
 
       document.body.appendChild(tempDiv);
@@ -212,11 +213,18 @@ export default function Home() {
           document.body.appendChild(link);
           link.click();
           
+          // Try to copy the URL for convenience (PNG itself cannot be clickable)
+          try {
+            navigator.clipboard.writeText(masterUrl)
+              .then(() => console.log('Link copied to clipboard'))
+              .catch(() => {});
+          } catch {}
+
           // Small delay before cleanup to ensure download starts
           setTimeout(() => {
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-          }, 100);
+          }, 150);
           
           console.log('QR code download initiated');
         } else {
