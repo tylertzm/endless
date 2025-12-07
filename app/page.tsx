@@ -63,6 +63,7 @@ export default function Home() {
   const [platformPopup, setPlatformPopup] = useState<{ platform: string | null; platformName?: string; handle: string } | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [qrColor, setQrColor] = useState("#C0C0C0");
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clickCountRef = useRef(0);
   const [steps] = useState<string[]>(STEP_KEYS);
@@ -161,242 +162,46 @@ export default function Home() {
   };
 
   const exportAsPNG = async () => {
-    // Create a temporary div for the mobile-friendly 2K image
+    // Generate Master QR Code for the back of the card
+    // This encodes the card data into a URL parameter for the website to render
+    // We exclude heavy assets like photos/logos from the QR code to keep the URL short
+    const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
+    const encodedData = btoa(JSON.stringify(exportData));
+    const uuid = crypto.randomUUID();
+    // Use the production domain for the QR code
+    const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
+    const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M', color: { dark: qrColor, light: '#FFFFFF' } });
+
+    // Create a temporary div for the QR code image with logo
     const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
     tempDiv.style.left = '-9999px';
     tempDiv.style.top = '-9999px';
-    tempDiv.style.width = '1440px';
-    tempDiv.style.height = '2560px';
-    tempDiv.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 50%, #A8A8A8 100%)';
+    tempDiv.style.width = '400px';
+    tempDiv.style.height = '500px';
+    tempDiv.style.background = 'white';
     tempDiv.style.display = 'flex';
     tempDiv.style.flexDirection = 'column';
     tempDiv.style.alignItems = 'center';
     tempDiv.style.justifyContent = 'center';
-    tempDiv.style.padding = '60px';
-    tempDiv.style.boxSizing = 'border-box';
+    tempDiv.style.padding = '20px';
+    tempDiv.innerHTML = `
+      <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 20px;" />
+      <img src="${masterQrDataUrl}" style="width: 360px; height: 360px; display: block;" />
+    `;
 
-    // Add logo at top
-    const logoImg = document.createElement('img');
-    logoImg.src = '/endless.webp?v=2';
-    logoImg.style.width = '250px';
-    logoImg.style.height = 'auto';
-    logoImg.style.marginBottom = '20px';
-    tempDiv.appendChild(logoImg);
-
-    // Create front and back cards stacked
-    const cardWrapper = document.createElement('div');
-    cardWrapper.style.display = 'flex';
-    cardWrapper.style.flexDirection = 'column';
-    cardWrapper.style.gap = '30px';
-    cardWrapper.style.alignItems = 'center';
-
-    // Find current card faces
-    const frontFace = document.querySelector('.techno-front, .kosma-front') as HTMLElement;
-    const backFace = document.querySelector('.techno-back, .kosma-back') as HTMLElement;
-
-    if (frontFace && backFace) {
-      // Clone front
-      const frontClone = frontFace.cloneNode(true) as HTMLElement;
-      frontClone.style.position = 'static';
-      frontClone.style.transform = 'none';
-      frontClone.style.backfaceVisibility = 'visible';
-      frontClone.style.width = '1000px';
-      frontClone.style.height = '600px';
-      frontClone.style.margin = '0';
-      frontClone.style.overflow = 'hidden';
-      frontClone.style.padding = '35px';
-      frontClone.style.boxSizing = 'border-box';
-      frontClone.style.display = 'flex';
-      frontClone.style.flexDirection = 'column';
-      frontClone.style.justifyContent = 'space-between';
-      frontClone.style.fontFamily = 'monospace';
-
-      // Apply card-specific styling
-      if (frontFace.classList.contains('kosma-front')) {
-        frontClone.style.background = '#050505';
-        frontClone.style.color = '#FFFFFF';
-        // Add the large K symbol background
-        const kElement = frontClone.querySelector('.kosma-topo-k') as HTMLElement;
-        if (kElement) {
-          kElement.style.background = 'repeating-radial-gradient(circle at 30% 30%, #333 0px, #333 1px, transparent 2px, transparent 6px)';
-          kElement.style.webkitBackgroundClip = 'text';
-          kElement.style.backgroundClip = 'text';
-          kElement.style.color = 'transparent';
-          kElement.style.opacity = '0.6';
-          kElement.style.filter = 'drop-shadow(0 0 1px rgba(255,255,255,0.1))';
-          kElement.style.fontSize = '140px';
-        }
-        // Style front content container
-        const frontContent = frontClone.querySelector('.kosma-front-content') as HTMLElement;
-        if (frontContent) {
-          frontContent.style.position = 'relative';
-          frontContent.style.zIndex = '1';
-          frontContent.style.height = '100%';
-          frontContent.style.display = 'flex';
-          frontContent.style.flexDirection = 'column';
-          frontContent.style.justifyContent = 'space-between';
-        }
-      } else if (frontFace.classList.contains('techno-front')) {
-        frontClone.style.backgroundColor = '#EAEAE6';
-        frontClone.style.color = '#111111';
-        frontClone.style.fontFamily = "'Space Mono', monospace";
-      }
-
-      // Scale front card text and logos 2x for export
-      frontClone.querySelectorAll('*').forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        // Scale text elements
-        if (htmlEl.innerText && htmlEl.children.length === 0) {
-          const computed = window.getComputedStyle(htmlEl);
-          const fontSize = parseFloat(computed.fontSize);
-          if (fontSize > 0) {
-            // Scale up, ensuring at least 24px for readability
-            htmlEl.style.fontSize = `${Math.max(fontSize * 3, 24)}px`;
-          }
-        }
-        // Scale logo/image elements
-        if (htmlEl.tagName === 'IMG') {
-          const computed = window.getComputedStyle(htmlEl);
-          const width = parseFloat(computed.width);
-          const height = parseFloat(computed.height);
-          if (width > 0) htmlEl.style.width = `${width * 2}px`;
-          if (height > 0 && !isNaN(height)) htmlEl.style.height = `${height * 2}px`;
-        }
-      });
-
-      // Social Icons Map for Export
-      const socialIcons: Record<string, string> = {
-        Instagram: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
-        LinkedIn: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>',
-        X: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>',
-        GitHub: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>',
-        Facebook: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
-        TikTok: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
-        YouTube: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
-        Other: '<svg viewBox="0 0 24 24" width="100%" height="100%" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>'
-      };
-
-      // Clone back
-      const backClone = backFace.cloneNode(true) as HTMLElement;
-      backClone.style.position = 'static';
-      backClone.style.transform = 'none';
-      backClone.style.backfaceVisibility = 'visible';
-      backClone.style.width = '1000px';
-      backClone.style.height = '600px';
-      backClone.style.margin = '0';
-      backClone.style.overflow = 'hidden';
-      backClone.style.padding = '35px';
-      backClone.style.boxSizing = 'border-box';
-      backClone.style.display = 'flex';
-      backClone.style.flexDirection = 'column';
-      backClone.style.justifyContent = 'space-between';
-      backClone.style.fontFamily = 'monospace';
-
-      // Generate Master QR Code for the back of the card
-      // This encodes the card data into a URL parameter for the website to render
-      // We exclude heavy assets like photos/logos from the QR code to keep the URL short
-      const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
-      const encodedData = btoa(JSON.stringify(exportData));
-      const uuid = crypto.randomUUID();
-      // Use the production domain for the QR code
-      const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
-      const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
-
-      // Ensure back card colors are preserved
-      if (backFace.classList.contains('kosma-back')) {
-        backClone.style.background = '#050505';
-        backClone.style.color = '#FFFFFF';
-        // Add the subtle radial gradient overlay
-        backClone.style.position = 'relative';
-        const overlay = document.createElement('div');
-        overlay.style.content = '';
-        overlay.style.position = 'absolute';
-        overlay.style.top = '-50%';
-        overlay.style.left = '-50%';
-        overlay.style.width = '200%';
-        overlay.style.height = '200%';
-        overlay.style.background = 'radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, transparent 60%)';
-        overlay.style.pointerEvents = 'none';
-        backClone.insertBefore(overlay, backClone.firstChild);
-        
-        // Update kosma back content to show QR code
-        const backContent = backClone.querySelector('.kosma-back-content') as HTMLElement;
-        if (backContent) {
-          backContent.style.position = 'relative';
-          backContent.style.zIndex = '1';
-          backContent.style.display = 'flex';
-          backContent.style.flexDirection = 'row';
-          backContent.style.alignItems = 'center';
-          backContent.style.justifyContent = 'space-between';
-          backContent.style.height = '100%';
-          backContent.style.padding = '0 40px';
-          
-          backContent.innerHTML = `
-            <div style="flex: 1; padding-right: 40px;">
-              <div style="font-size: 86px; line-height: 1.1; font-weight: 600; letter-spacing: -1px; word-break: break-word; color: #FFFFFF; margin-bottom: 20px;">
-                ${cardData.title || "Your Title"}
-              </div>
-              <div style="font-size: 32px; color: #888888;">
-                Scan to connect and view full profile
-              </div>
-            </div>
-            <div style="flex: 0 0 300px; display: flex; justify-content: center; align-items: center;">
-              <div style="background: white; padding: 20px; border-radius: 16px;">
-                <img src="${masterQrDataUrl}" style="width: 260px; height: 260px; display: block;" />
-              </div>
-            </div>
-          `;
-        }
-      } else if (backFace.classList.contains('techno-back')) {
-        backClone.style.backgroundColor = '#EAEAE6';
-        backClone.style.color = '#111111';
-        backClone.style.fontFamily = "'Space Mono', monospace";
-        // Update techno back content
-        const backContent = backClone.querySelector('.center-content') as HTMLElement;
-        if (backContent) {
-          backContent.style.textAlign = 'left';
-          backContent.style.flexGrow = '1';
-          backContent.style.display = 'flex';
-          backContent.style.flexDirection = 'row';
-          backContent.style.justifyContent = 'space-between';
-          backContent.style.alignItems = 'center';
-          backContent.style.padding = '0 20px';
-          
-          backContent.innerHTML = `
-            <div style="flex: 1; padding-right: 40px;">
-              <h2 style="font-size: 74px; margin-bottom: 16px; font-weight: 600;">Contact</h2>
-              <p style="font-family: 'Space Mono', monospace; font-size: 32px; color: #444;">
-                Scan the QR code to view full contact details and social profiles.
-              </p>
-            </div>
-            <div style="flex: 0 0 300px; display: flex; justify-content: center; align-items: center;">
-              <div style="border: 4px solid #111; padding: 15px; background: white;">
-                <img src="${masterQrDataUrl}" style="width: 260px; height: 260px; display: block;" />
-              </div>
-            </div>
-          `;
-        }
-      }
-
-      cardWrapper.appendChild(frontClone);
-      cardWrapper.appendChild(backClone);
-    }
-
-    tempDiv.appendChild(cardWrapper);
     document.body.appendChild(tempDiv);
 
     try {
       const canvas = await html2canvas(tempDiv, {
-        width: 1440,
-        height: 2560,
-        backgroundColor: '#000000',
-        scale: 1.5,
+        width: 400,
+        height: 500,
+        backgroundColor: '#FFFFFF',
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
-        imageTimeout: 5000,
-        windowHeight: 2560
+        imageTimeout: 5000
       });
 
       // Convert canvas to blob for better mobile compatibility
@@ -405,29 +210,20 @@ export default function Home() {
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `${cardData.name || 'business-card'}.png`;
+          link.download = `${cardData.name || 'business-card'}-qr.png`;
           link.style.display = 'none';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
         }
-      }, 'image/png', 0.95);
+      }, 'image/png');
     } catch (error) {
-      console.error('Error generating PNG:', error);
-      alert('Failed to generate PNG. Please try again.');
+      console.error('Error exporting PNG:', error);
+      alert('Failed to export PNG. Please try again.');
     } finally {
       document.body.removeChild(tempDiv);
     }
-  };
-
-  const previewSite = () => {
-    // Exclude heavy assets like photos/logos from the URL to keep it short
-    const exportData = { ...cardData, style: cardStyle, photo: '', logo: '' };
-    const encodedData = btoa(JSON.stringify(exportData));
-    // Use a local preview route
-    const url = `${window.location.origin}/previewsite?data=${encodedData}`;
-    window.open(url, '_blank');
   };
 
   const totalSteps = steps.length;
@@ -1292,10 +1088,13 @@ export default function Home() {
                 <div>
                   <div className="question">✨ Done!</div>
                   <div className="small">This is the final preview of your digital business card. Export when ready.</div>
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">QR Code Color:</label>
+                    <input type="color" value={qrColor} onChange={(e) => setQrColor(e.target.value)} className="w-12 h-8 border border-gray-300 rounded" />
+                  </div>
                   <div className="mt-4 flex gap-2 flex-wrap">
                     <button onClick={exportAsVCard} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Export as Contact</button>
-                    <button onClick={exportAsPNG} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Save as PNG</button>
-                    <button onClick={previewSite} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Preview Site</button>
+                    <button onClick={exportAsPNG} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Save QR Code</button>
                   </div>
                 </div>
               )}
