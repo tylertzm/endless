@@ -1097,6 +1097,21 @@ export default function Home() {
         .kosma-card {
           animation: autoFlip 4s ease-in-out infinite;
         }
+
+        .kosma-card.flipped {
+          animation: none;
+          transform: rotateY(180deg);
+        }
+
+        .kosma-card.zoomed {
+          animation: none;
+          transform: scale(1.5);
+        }
+
+        .kosma-card.flipped.zoomed {
+          animation: none;
+          transform: rotateY(180deg) scale(1.5);
+        }
       `}</style>
 
       <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
@@ -1365,13 +1380,13 @@ export default function Home() {
                             {cardData.title || "Your Title"}
                           </div>
                           <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
-                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
+                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF', textAlign: 'justify' }}>
                               <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
                               <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
                               <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
                               <p><strong>Address:</strong> {cardData.address || "Not provided"}</p>
                             </div>
-                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
+                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF', textAlign: 'justify' }}>
                               {cardData.socials.length > 0 && (
                                 <div>
                                   <p><strong>Social Links:</strong></p>

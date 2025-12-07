@@ -380,13 +380,13 @@ function CardContent() {
                   {data.title || "Your Title"}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(8px, 2vw, 16px)', fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
-                  <div>
+                  <div style={{ textAlign: 'justify' }}>
                     <p><strong>Phone:</strong> {data.phone || "Not provided"}</p>
                     <p><strong>Email:</strong> {data.email || "Not provided"}</p>
                     <p><strong>Website:</strong> {data.website || "Not provided"}</p>
                     <p><strong>Address:</strong> {data.address || "Not provided"}</p>
                   </div>
-                  <div>
+                  <div style={{ textAlign: 'justify' }}>
                     {data.socials.length > 0 && (
                       <div>
                         <p><strong>Social Links:</strong></p>
