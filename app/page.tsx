@@ -187,7 +187,7 @@ export default function Home() {
     tempDiv.innerHTML = `
       <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 20px; filter: brightness(0) invert(1);" />
       <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 15px; filter: brightness(0.8) contrast(1.2) saturate(1.5);" />
-      <div style="font-family: Arial, sans-serif; font-size: 12px; color: #FFFFFF; opacity: 0.7; text-align: center; word-break: break-all; padding: 0 10px;">${masterUrl}</div>
+      <div style="font-family: Arial, sans-serif; font-size: 5px; color: #FFFFFF; opacity: 0.7; text-align: center; word-break: break-all; padding: 0 10px;">${masterUrl}</div>
     `;
 
     document.body.appendChild(tempDiv);
