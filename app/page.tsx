@@ -1256,14 +1256,14 @@ export default function Home() {
               </div>
             </div>
           </div>
+          
+          {/* Footer */}
+          <footer className="text-white/50 py-4 text-center text-xs mt-4">
+            <a href="/impressum" className="hover:text-white/80 transition-colors">
+              Impressum
+            </a>
+          </footer>
         </div>
-
-        {/* Footer */}
-        <footer className="fixed bottom-0 left-0 right-0 bg-transparent text-white/50 py-2 text-center text-xs z-[100]">
-          <a href="/impressum" className="hover:text-white/80 transition-colors">
-            Impressum
-          </a>
-        </footer>
     </>
   );
 }                

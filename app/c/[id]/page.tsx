@@ -473,7 +473,7 @@ function CardContent() {
 
       <button 
         onClick={saveContact}
-        className="mt-12 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
+        className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -484,7 +484,7 @@ function CardContent() {
       </button>
 
       {/* Footer */}
-      <footer className="mt-12 text-white/50 py-4 text-center text-xs">
+      <footer className="mt-8 mb-4 text-white/50 py-2 text-center text-xs">
         <a href="/impressum" className="hover:text-white/80 transition-colors">
           Impressum
         </a>
