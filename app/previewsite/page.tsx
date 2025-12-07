@@ -283,8 +283,12 @@ function PreviewContent() {
           transform: rotateY(180deg);
         }
 
-        .zoomed {
+        .kosma-card.zoomed {
           transform: scale(1.5);
+        }
+
+        .kosma-card.flipped.zoomed {
+          transform: scale(1.5) rotateY(180deg);
         }
 
         @keyframes promptPulse {
@@ -305,7 +309,7 @@ function PreviewContent() {
 
       <div className="relative group cursor-pointer" onClick={saveContact}>
         <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => {
+          <div className={`kosma-card-wrapper prompt-animation`} onClick={(e) => {
             e.stopPropagation();
             clickCountRef.current++;
             if (clickCountRef.current === 1) {
@@ -321,7 +325,7 @@ function PreviewContent() {
               clickCountRef.current = 0;
             }
           }}>
-            <div className={`kosma-card ${flipped ? 'flipped' : ''}`}>
+            <div className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}>
               <div className="kosma-card-face kosma-front">
                 <div className="kosma-front-content">
                   <div className="kosma-brand-header">
@@ -336,9 +340,6 @@ function PreviewContent() {
                   </div>
                   <div className="kosma-logo-text-bottom">
                     <span>{data.name || "Your Name"}</span>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path d="M12 2L2 22H22L12 2Z" fill="white"/>
-                    </svg>
                   </div>
                 </div>
               </div>
