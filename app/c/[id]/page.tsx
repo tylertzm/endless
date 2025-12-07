@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, Suspense } from 'react';
+import { useEffect, useMemo, Suspense, useState } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 
 interface SocialLink {
@@ -44,6 +44,9 @@ function CardContent() {
       return null;
     }
   }, [searchParams]);
+
+  const [flipped, setFlipped] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
     if (data && params.id) {
@@ -459,7 +462,15 @@ function CardContent() {
         }
 
         .kosma-card, .techno-card {
-          animation: autoFlip 4s ease-in-out infinite;
+          /* animation: autoFlip 4s ease-in-out infinite; */
+        }
+
+        .kosma-card.flipped, .techno-card.flipped {
+          transform: rotateY(180deg);
+        }
+
+        .zoomed {
+          transform: scale(1.5);
         }
       `}</style>
 
@@ -472,8 +483,8 @@ function CardContent() {
       <div className="relative group cursor-pointer" onClick={saveContact}>
         <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
         {cardStyle === 'techno' ? (
-        <div className="techno-card-wrapper">
-          <div className="techno-card">
+        <div className={`techno-card-wrapper ${zoomed ? 'zoomed' : ''}`} onClick={() => setFlipped(!flipped)}>
+          <div className={`techno-card ${flipped ? 'flipped' : ''}`}>
             <div className="techno-card-face techno-front">
               <div className="top-label">
                 {data.logo && (
@@ -528,8 +539,8 @@ function CardContent() {
           </div>
         </div>
       ) : (
-        <div className="kosma-card-wrapper">
-          <div className="kosma-card">
+        <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''}`} onClick={() => setFlipped(!flipped)}>
+          <div className={`kosma-card ${flipped ? 'flipped' : ''}`}>
             <div className="kosma-card-face kosma-front">
               <div className="kosma-front-content">
                 <div className="kosma-brand-header">
@@ -586,6 +597,17 @@ function CardContent() {
           </div>
         </div>
       )}
+
+      <div className="mt-4 text-center text-white/70 text-sm">
+        Tap to flip
+      </div>
+
+      <button 
+        onClick={() => setZoomed(!zoomed)}
+        className="mt-4 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors"
+      >
+        {zoomed ? 'Zoom Out' : 'Zoom In'}
+      </button>
 
       <button 
         onClick={saveContact}
