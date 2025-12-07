@@ -443,6 +443,15 @@ function PreviewContent() {
         .zoomed {
           transform: scale(1.5);
         }
+
+        @keyframes promptPulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.02); opacity: 0.9; }
+        }
+
+        .prompt-animation {
+          animation: promptPulse 3s ease-in-out infinite;
+        }
       `}</style>
 
       <div className="mb-12">
@@ -454,7 +463,7 @@ function PreviewContent() {
       <div className="relative group cursor-pointer" onClick={saveContact}>
         <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
         {cardStyle === 'techno' ? (
-          <div className={`techno-card-wrapper ${zoomed ? 'zoomed' : ''}`} onClick={() => setFlipped(!flipped)}>
+          <div className={`techno-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} onDoubleClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }}>
             <div className={`techno-card ${flipped ? 'flipped' : ''}`}>
               <div className="techno-card-face techno-front">
                 <div className="top-label">
@@ -510,7 +519,7 @@ function PreviewContent() {
             </div>
           </div>
         ) : (
-          <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''}`} onClick={() => setFlipped(!flipped)}>
+          <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} onDoubleClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }}>
             <div className={`kosma-card ${flipped ? 'flipped' : ''}`}>
               <div className="kosma-card-face kosma-front">
                 <div className="kosma-front-content">
@@ -571,15 +580,8 @@ function PreviewContent() {
       </div>
 
       <div className="mt-4 text-center text-white/70 text-sm">
-        Tap to flip
+        Tap to flip • Double-tap to zoom
       </div>
-
-      <button 
-        onClick={() => setZoomed(!zoomed)}
-        className="mt-4 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors"
-      >
-        {zoomed ? 'Zoom Out' : 'Zoom In'}
-      </button>
 
       <button 
         onClick={saveContact}
