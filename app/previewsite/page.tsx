@@ -518,7 +518,7 @@ function PreviewContent() {
             </div>
           </div>
         ) : (
-          <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} onDoubleClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }}>
+          <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }} onDoubleClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }}>
             <div className={`kosma-card ${flipped ? 'flipped' : ''}`}>
               <div className="kosma-card-face kosma-front">
                 <div className="kosma-front-content">
