@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "Connect better",
   icons: {
     icon: "/endless.webp",
+    shortcut: "/endless.webp",
+    apple: "/endless.webp",
   },
 };
 
