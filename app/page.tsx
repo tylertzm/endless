@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import FluidBackground from "./FluidBackground";
@@ -61,6 +61,10 @@ export default function Home() {
   const [gradientEnd, setGradientEnd] = useState("#1e40af");
   const [startX, setStartX] = useState<number | null>(null);
   const [platformPopup, setPlatformPopup] = useState<{ platform: string | null; platformName?: string; handle: string } | null>(null);
+  const [flipped, setFlipped] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const clickCountRef = useRef(0);
   const [steps] = useState<string[]>(STEP_KEYS);
 
   // Load from localStorage on mount
@@ -1318,8 +1322,23 @@ export default function Home() {
                     setStartX(null);
                   }}
                 >
-                  <div className="kosma-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
-                    <div className="kosma-card">
+                  <div className="kosma-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }} onClick={(e) => {
+                    e.stopPropagation();
+                    clickCountRef.current++;
+                    if (clickCountRef.current === 1) {
+                      clickTimerRef.current = setTimeout(() => {
+                        setFlipped(!flipped);
+                        clickCountRef.current = 0;
+                      }, 300);
+                    } else if (clickCountRef.current === 2) {
+                      if (clickTimerRef.current) {
+                        clearTimeout(clickTimerRef.current);
+                      }
+                      setZoomed(!zoomed);
+                      clickCountRef.current = 0;
+                    }
+                  }}>
+                    <div className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}>
                       <div className="kosma-card-face kosma-front">
                         <div className="kosma-front-content">
                           <div className="kosma-brand-header">
@@ -1345,19 +1364,23 @@ export default function Home() {
                           <div className="kosma-headline-large">
                             {cardData.title || "Your Title"}
                           </div>
-                          <div style={{ fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
-                            <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
-                            <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
-                            <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
-                            <p><strong>Address:</strong> {cardData.address || "Not provided"}</p>
-                            {cardData.socials.length > 0 && (
-                              <div>
-                                <p><strong>Social Links:</strong></p>
-                                {cardData.socials.map((social, i) => (
-                                  <p key={i}>{social.platform}: {social.handle}</p>
-                                ))}
-                              </div>
-                            )}
+                          <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
+                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
+                              <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
+                              <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
+                              <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
+                              <p><strong>Address:</strong> {cardData.address || "Not provided"}</p>
+                            </div>
+                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
+                              {cardData.socials.length > 0 && (
+                                <div>
+                                  <p><strong>Social Links:</strong></p>
+                                  {cardData.socials.map((social, i) => (
+                                    <p key={i}>{social.platform}: {social.handle}</p>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div className="kosma-info-grid">
                             <div className="kosma-palette-pill">
