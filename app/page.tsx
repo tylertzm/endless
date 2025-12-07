@@ -22,6 +22,7 @@ interface CardData {
   photo: string;
   logo: string;
   socials: SocialLink[];
+  style?: 'kosma';
 }
 
 const STEP_KEYS = [
@@ -38,7 +39,7 @@ const STEP_KEYS = [
   "preview",
 ];
 
-const styles = ["techno", "kosma"] as const;
+const styles = ["kosma"] as const;
 
 export default function Home() {
   const [cardData, setCardData] = useState<CardData>({
@@ -1080,92 +1081,6 @@ export default function Home() {
           margin-bottom: clamp(2px, 0.5vw, 4px);
         }
 
-        /* Techno Card Flip */
-        .techno-card-wrapper {
-          width: clamp(300px, 80vw, 600px);
-          aspect-ratio: 1.75;
-          position: relative;
-          perspective: 1500px;
-          cursor: pointer;
-        }
-
-        .techno-card {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          border-radius: 0;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
-
-        .techno-card:hover, .techno-card.flipped {
-          transform: rotateY(180deg);
-        }
-
-        .techno-card-face {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-          border-radius: 0;
-          overflow: hidden;
-          box-sizing: border-box;
-        }
-
-        .techno-front {
-          background-color: #EAEAE6;
-          color: #111111;
-          padding: clamp(12px, 3vw, 25px);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: 'Space Mono', monospace;
-        }
-
-        .techno-back {
-          background-color: #EAEAE6;
-          color: #111111;
-          padding: clamp(12px, 3vw, 25px);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: 'Space Mono', monospace;
-          transform: rotateY(180deg);
-        }
-
-        .glass-arrow {
-          background: rgba(255, 140, 0, 0.05);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 140, 0, 0.2);
-          border-radius: 50%;
-          width: 64px;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #ff8c00;
-          font-size: 36px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          animation: pulseArrow 5s ease-in-out infinite;
-        }
-
-        @keyframes pulseArrow {
-          0%, 100% {
-            background: rgba(255, 140, 0, 0.05);
-          }
-          50% {
-            background: rgba(255, 140, 0, 0.2);
-          }
-        }
-
-        .glass-arrow:hover {
-          background: rgba(255, 140, 0, 0.3);
-          transform: scale(1.1);
-        }
-        
         /* Auto flip animation: small tilt then full flip then reset */
         @keyframes autoFlip {
           0% { transform: rotateY(0deg); }
@@ -1175,7 +1090,7 @@ export default function Home() {
           100% { transform: rotateY(360deg); }
         }
 
-        .kosma-card, .techno-card {
+        .kosma-card {
           animation: autoFlip 4s ease-in-out infinite;
         }
       `}</style>
@@ -1249,7 +1164,7 @@ export default function Home() {
               {steps[currentStep] === 'logo' && (
                 <div>
                   <div className="question">Upload company logo (optional)</div>
-                  <div className="small">Logo will appear in center of Kosma style and top-left of Techno style.</div>
+                  <div className="small">Logo will appear in center of Kosma style.</div>
                   <input type="file" accept="image/*" onChange={handleLogoChange} className="input mt-4" />
                   {cardData.logo && (
                     <div className="mt-2">
@@ -1403,100 +1318,7 @@ export default function Home() {
                     setStartX(null);
                   }}
                 >
-                  {cardStyle === "techno" ? (
-                    <div className="techno-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
-                      <button
-                        onClick={prevStyle}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        aria-label="Previous style"
-                        style={{ position: 'absolute', left: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
-                        className="glass-arrow"
-                      >
-                        ‹
-                      </button>
-                      <button
-                        onClick={nextStyle}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        aria-label="Next style"
-                        style={{ position: 'absolute', right: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
-                        className="glass-arrow"
-                      >
-                        ›
-                      </button>
-                    <div className="techno-card">
-                      <div className="techno-card-face techno-front">
-                        <div className="top-label">
-                          {cardData.logo && (
-                            <img src={cardData.logo} alt="Logo" style={{ width: 'clamp(30px, 8vw, 60px)', height: 'auto', marginBottom: '5px' }} />
-                          )}
-                          {cardData.company || "Your Company"}
-                        </div>
-                        <div className="center-content">
-                          <h1 className="name">{cardData.name || "Your Name"}</h1>
-                          <p className="role">[ <span>{cardData.title || "Your Title"}</span> ]</p>
-                          <div className="social">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                            </svg>
-                            @{cardData.socials[0]?.handle || cardData.name?.toLowerCase().replace(' ', '.') || 'your.handle'}
-                          </div>
-                        </div>
-                        <div className="interface-area">
-                          <div className="corner-text corner-left">{cardData.email || "your@email.com"}</div>
-                          <div className="knob-group">
-                            <div className="knob"></div>
-                            <div className="knob"></div>
-                            <div className="knob"></div>
-                          </div>
-                          <div className="corner-text corner-right">{cardData.website || "www.yoursite.com"}</div>
-                        </div>
-                        <svg className="wave-line">
-                          <path d="M0,60 L20,60 Q40,60 40,40 L40,30 Q40,10 60,10 L540,10 Q560,10 560,30 L560,40 Q560,60 580,60 L600,60" fill="none" stroke="#CCC" strokeWidth="1" />
-                        </svg>
-                      </div>
-                      <div className="techno-card-face techno-back">
-                        <div className="center-content" style={{ textAlign: 'center' }}>
-                          <h2>Contact Information</h2>
-                          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', lineHeight: '1.6' }}>
-                            <p><strong>Phone:</strong> {cardData.phone || "Not provided"}</p>
-                            <p><strong>Email:</strong> {cardData.email || "Not provided"}</p>
-                            <p><strong>Website:</strong> {cardData.website || "Not provided"}</p>
-                            <p><strong>Address:</strong> {cardData.address || "Not provided"}</p>
-                            {cardData.socials.length > 0 && (
-                              <div>
-                                <strong>Social:</strong>
-                                {cardData.socials.map((social, i) => (
-                                  <div key={i}>{social.platform}: {social.handle}</div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                    <div className="kosma-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
-                      <button
-                        onClick={prevStyle}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        aria-label="Previous style"
-                        style={{ position: 'absolute', left: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
-                        className="glass-arrow"
-                      >
-                        ‹
-                      </button>
-                      <button
-                        onClick={nextStyle}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        aria-label="Next style"
-                        style={{ position: 'absolute', right: '-40px', top: '50%', transform: 'translateY(-50%)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', zIndex: 20 }}
-                        className="glass-arrow"
-                      >
-                        ›
-                      </button>
+                  <div className="kosma-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }}>
                     <div className="kosma-card">
                       <div className="kosma-card-face kosma-front">
                         <div className="kosma-front-content">
@@ -1553,7 +1375,6 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                )}
                 </div>
               </div>
             </div>
