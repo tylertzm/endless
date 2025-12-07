@@ -926,6 +926,10 @@ export default function Home() {
           transform: rotateY(180deg);
         }
 
+        .kosma-card.flipped .kosma-front {
+          visibility: hidden;
+        }
+
         .kosma-card.zoomed {
           animation: none;
           transform: scale(1.5);
@@ -1207,9 +1211,6 @@ export default function Home() {
                           </div>
                           <div className="kosma-logo-text-bottom">
                             {cardData.name && <span>{cardData.name}</span>}
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                              <path d="M12 2L2 22H22L12 2Z" fill="white"/>
-                            </svg>
                           </div>
                         </div>
                       </div>

@@ -339,6 +339,10 @@ function CardContent() {
           transform: rotateY(180deg);
         }
 
+        .kosma-card.flipped .kosma-front {
+          visibility: hidden;
+        }
+
         .kosma-card.zoomed {
           transform: scale(1.5);
         }
