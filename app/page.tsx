@@ -158,7 +158,6 @@ export default function Home() {
     try {
       // Generate Master QR Code for the back of the card
       // This encodes the card data into a URL parameter for the website to render
-      // We exclude heavy assets like photos from the QR code to keep the URL short
       const exportData = { ...cardData, style: cardStyle };
       const encodedData = btoa(JSON.stringify(exportData));
       const uuid = crypto.randomUUID();
@@ -174,24 +173,24 @@ export default function Home() {
       tempDiv.style.left = '-9999px';
       tempDiv.style.top = '-9999px';
       tempDiv.style.width = '400px';
-      tempDiv.style.height = '550px';
+      tempDiv.style.height = '600px';
       tempDiv.style.background = 'black';
       tempDiv.style.display = 'flex';
       tempDiv.style.flexDirection = 'column';
       tempDiv.style.alignItems = 'center';
       tempDiv.style.justifyContent = 'center';
-      tempDiv.style.padding = '20px';
+      tempDiv.style.padding = '30px 20px';
       tempDiv.innerHTML = `
-        <img src="/endless.webp?v=2" style="width: 120px; height: auto; margin-bottom: 16px; filter: brightness(0) invert(1);" />
-        <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 12px; filter: brightness(0.9) contrast(1.2) saturate(1.2);" />
-        <div style="font-family: Arial, sans-serif; font-size: 10px; color: #FFFFFF; opacity: 0.9; text-align: center; word-break: break-all; padding: 0 12px;">${masterUrl}</div>
+        <div style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 700; color: #FFFFFF; margin-bottom: 20px; letter-spacing: 2px;">ENDLESS</div>
+        <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 16px;" />
+        <div style="font-family: Arial, sans-serif; font-size: 9px; color: #FFFFFF; opacity: 0.8; text-align: center; word-break: break-all; padding: 0 20px; line-height: 1.4;">${masterUrl}</div>
       `;
 
       document.body.appendChild(tempDiv);
 
       const canvas = await html2canvas(tempDiv, {
         width: 400,
-        height: 550,
+        height: 600,
         backgroundColor: '#000000',
         scale: 2,
         useCORS: true,
