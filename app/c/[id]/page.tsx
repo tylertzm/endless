@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, Suspense, useState } from 'react';
+import { useEffect, useMemo, Suspense, useState, useRef } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 
 interface SocialLink {
@@ -21,7 +21,7 @@ interface CardData {
   photo: string;
   logo: string;
   socials: SocialLink[];
-  style?: 'kosma' | 'techno';
+  style?: 'kosma';
 }
 
 interface HistoryItem {
@@ -47,6 +47,9 @@ function CardContent() {
 
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const clickCountRef = useRef(0);
 
   useEffect(() => {
     if (data && params.id) {
@@ -294,164 +297,6 @@ function CardContent() {
           margin-bottom: clamp(2px, 0.5vw, 4px);
         }
 
-        /* Techno Card Styles */
-        .techno-card-wrapper {
-          width: clamp(300px, 80vw, 600px);
-          aspect-ratio: 1.75;
-          position: relative;
-          perspective: 1500px;
-        }
-
-        .techno-card {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          border-radius: 0;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
-
-        .techno-card-face {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-          border-radius: 0;
-          overflow: hidden;
-          box-sizing: border-box;
-        }
-
-        .techno-front {
-          background-color: #EAEAE6;
-          color: #111111;
-          padding: clamp(12px, 3vw, 25px);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: 'Space Mono', monospace;
-        }
-
-        .techno-back {
-          background-color: #EAEAE6;
-          color: #111111;
-          padding: clamp(12px, 3vw, 25px);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: 'Space Mono', monospace;
-          transform: rotateY(180deg);
-        }
-
-        .top-label {
-          font-size: clamp(6px, 1.2vw, 10px);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          text-align: right;
-          border-bottom: 1px solid #ccc;
-          padding-bottom: clamp(4px, 1vw, 10px);
-          margin-bottom: clamp(4px, 1vw, 10px);
-          width: 100%;
-        }
-
-        .center-content {
-          text-align: center;
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          margin-bottom: 20px;
-        }
-
-        .name {
-          font-family: 'Unbounded', sans-serif;
-          font-size: clamp(10px, 3vw, 24px);
-          text-transform: uppercase;
-          margin: 0 0 clamp(2px, 0.6vw, 5px) 0;
-          letter-spacing: clamp(0.5px, 0.15vw, 1px);
-        }
-
-        .role {
-          font-size: clamp(6px, 1.5vw, 12px);
-          color: #555;
-          margin: 0; 
-        }
-
-        .role span {
-          color: #F24A29;
-        }
-
-        .social {
-          margin-top: clamp(6px, 1.8vw, 15px);
-          font-size: clamp(5px, 1.3vw, 11px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: clamp(2px, 0.6vw, 5px);
-        }
-
-        .interface-area {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          position: relative;
-        }
-
-        .knob-group {
-          display: flex;
-          gap: clamp(8px, 2.5vw, 20px);
-          position: relative;
-          z-index: 1;
-          background: #EAEAE6;
-          padding: 0 clamp(4px, 1.2vw, 10px);
-          margin: 0 auto;
-        }
-
-        .knob {
-          width: clamp(20px, 6vw, 50px);
-          height: clamp(20px, 6vw, 50px);
-          border: clamp(1px, 0.25vw, 2px) solid #111111;
-          border-radius: 50%;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .knob::after {
-          content: '';
-          position: absolute;
-          width: 2px;
-          height: 12px;
-          background-color: #F24A29;
-          top: 5px;
-          transform-origin: bottom center;
-        }
-
-        .knob:nth-child(1)::after { transform: rotate(-45deg) translateY(12px); }
-        .knob:nth-child(2)::after { transform: rotate(0deg) translateY(12px); }
-        .knob:nth-child(3)::after { transform: rotate(45deg) translateY(12px); }
-
-        .corner-text {
-          font-size: clamp(4px, 1.1vw, 9px);
-          text-transform: uppercase;
-          position: absolute;
-          bottom: 5px;
-        }
-        .corner-left { left: clamp(12px, 3vw, 25px); bottom: clamp(14px, 4vw, 35px);}
-        .corner-right { right: clamp(12px, 3vw, 25px); bottom: clamp(14px, 4vw, 35px);}
-
-        .wave-line {
-          position: absolute;
-          bottom: 30px;
-          left: 0;
-          width: 100%;
-          height: 60px;
-          pointer-events: none;
-          z-index: 0;
-        }
-
         /* Auto flip animation */
         @keyframes autoFlip {
           0% { transform: rotateY(0deg); }
@@ -461,11 +306,11 @@ function CardContent() {
           100% { transform: rotateY(360deg); }
         }
 
-        .kosma-card, .techno-card {
+        .kosma-card {
           /* animation: autoFlip 4s ease-in-out infinite; */
         }
 
-        .kosma-card.flipped, .techno-card.flipped {
+        .kosma-card.flipped {
           transform: rotateY(180deg);
         }
 
@@ -491,63 +336,22 @@ function CardContent() {
 
       <div className="relative group cursor-pointer" onClick={saveContact}>
         <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-        {cardStyle === 'techno' ? (
-        <div className={`techno-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }} onDoubleClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }}>
-          <div className={`techno-card ${flipped ? 'flipped' : ''}`}>
-            <div className="techno-card-face techno-front">
-              <div className="top-label">
-                {data.logo && (
-                  <img src={data.logo} alt="Logo" style={{ width: 'clamp(30px, 8vw, 60px)', height: 'auto', marginBottom: '5px' }} />
-                )}
-                {data.company && (data.company)}
-              </div>
-              <div className="center-content">
-                <h1 className="name">{data.name || "Your Name"}</h1>
-                {data.title && <p className="role">[ <span>{data.title}</span> ]</p>}
-                {data.socials && data.socials.length > 0 && <div className="social">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                  </svg>
-                  @{data.socials[0]?.handle || data.name?.toLowerCase().replace(' ', '.') || 'your.handle'}
-                </div>}
-              </div>
-              <div className="interface-area">
-                {data.email && <div className="corner-text corner-left">{data.email}</div>}
-                <div className="knob-group">
-                  <div className="knob"></div>
-                  <div className="knob"></div>
-                  <div className="knob"></div>
-                </div>
-              </div>
-              <svg className="wave-line">
-                <path d="M0,60 L20,60 Q40,60 40,40 L40,30 Q40,10 60,10 L540,10 Q560,10 560,30 L560,40 Q560,60 580,60 L600,60" fill="none" stroke="#CCC" strokeWidth="1" />
-              </svg>
-            </div>
-            <div className="techno-card-face techno-back">
-              <div className="center-content" style={{ textAlign: 'center' }}>
-                <h2>Contact Information</h2>
-                <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', lineHeight: '1.6' }}>
-                  <p><strong>Phone:</strong> {data.phone || "Not provided"}</p>
-                  <p><strong>Email:</strong> {data.email || "Not provided"}</p>
-                  <p><strong>Website:</strong> {data.website || "Not provided"}</p>
-                  <p><strong>Address:</strong> {data.address || "Not provided"}</p>
-                  {data.socials.length > 0 && (
-                    <div>
-                      <strong>Social:</strong>
-                      {data.socials.map((social, i) => (
-                        <div key={i}>{social.platform}: {social.handle}</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }} onDoubleClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }}>
+        <div className={`kosma-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => {
+          e.stopPropagation();
+          clickCountRef.current++;
+          if (clickCountRef.current === 1) {
+            clickTimerRef.current = setTimeout(() => {
+              setFlipped(!flipped);
+              clickCountRef.current = 0;
+            }, 300);
+          } else if (clickCountRef.current === 2) {
+            if (clickTimerRef.current) {
+              clearTimeout(clickTimerRef.current);
+            }
+            setZoomed(!zoomed);
+            clickCountRef.current = 0;
+          }
+        }}>
           <div className={`kosma-card ${flipped ? 'flipped' : ''}`}>
             <div className="kosma-card-face kosma-front">
               <div className="kosma-front-content">
@@ -574,19 +378,23 @@ function CardContent() {
                 <div className="kosma-headline-large">
                   {data.title || "Your Title"}
                 </div>
-                <div style={{ fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
-                  <p><strong>Phone:</strong> {data.phone || "Not provided"}</p>
-                  <p><strong>Email:</strong> {data.email || "Not provided"}</p>
-                  <p><strong>Website:</strong> {data.website || "Not provided"}</p>
-                  <p><strong>Address:</strong> {data.address || "Not provided"}</p>
-                  {data.socials.length > 0 && (
-                    <div>
-                      <p><strong>Social Links:</strong></p>
-                      {data.socials.map((social, i) => (
-                        <p key={i}>{social.platform}: {social.handle}</p>
-                      ))}
-                    </div>
-                  )}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(8px, 2vw, 16px)', fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
+                  <div>
+                    <p><strong>Phone:</strong> {data.phone || "Not provided"}</p>
+                    <p><strong>Email:</strong> {data.email || "Not provided"}</p>
+                    <p><strong>Website:</strong> {data.website || "Not provided"}</p>
+                    <p><strong>Address:</strong> {data.address || "Not provided"}</p>
+                  </div>
+                  <div>
+                    {data.socials.length > 0 && (
+                      <div>
+                        <p><strong>Social Links:</strong></p>
+                        {data.socials.map((social, i) => (
+                          <p key={i}>{social.platform}: {social.handle}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="kosma-info-grid">
                   <div className="kosma-palette-pill">
@@ -604,10 +412,10 @@ function CardContent() {
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="mt-4 text-center text-white/70 text-sm">
-        Tap to zoom • Double-tap to flip
+        Tap to flip • Double-tap to zoom
       </div>
 
       <button 
@@ -621,7 +429,6 @@ function CardContent() {
         </svg>
         Save Contact
       </button>
-      </div>
     </div>
   );
 }
