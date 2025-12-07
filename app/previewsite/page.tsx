@@ -463,35 +463,34 @@ function PreviewContent() {
       <div className="relative group cursor-pointer" onClick={saveContact}>
         <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
         {cardStyle === 'techno' ? (
-          <div className={`techno-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} onDoubleClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }}>
+          <div className={`techno-card-wrapper ${zoomed ? 'zoomed' : ''} prompt-animation`} onClick={(e) => { e.stopPropagation(); setZoomed(!zoomed); }} onDoubleClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }}>
             <div className={`techno-card ${flipped ? 'flipped' : ''}`}>
               <div className="techno-card-face techno-front">
                 <div className="top-label">
                   {data.logo && (
                     <img src={data.logo} alt="Logo" style={{ width: 'clamp(30px, 8vw, 60px)', height: 'auto', marginBottom: '5px' }} />
                   )}
-                  {data.company || "Your Company"}
+                  {data.company && (data.company)}
                 </div>
                 <div className="center-content">
                   <h1 className="name">{data.name || "Your Name"}</h1>
-                  <p className="role">[ <span>{data.title || "Your Title"}</span> ]</p>
-                  <div className="social">
+                  {data.title && <p className="role">[ <span>{data.title}</span> ]</p>}
+                  {data.socials && data.socials.length > 0 && <div className="social">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                     </svg>
                     @{data.socials[0]?.handle || data.name?.toLowerCase().replace(' ', '.') || 'your.handle'}
-                  </div>
+                  </div>}
                 </div>
                 <div className="interface-area">
-                  <div className="corner-text corner-left">{data.email || "your@email.com"}</div>
+                  {data.email && <div className="corner-text corner-left">{data.email}</div>}
                   <div className="knob-group">
                     <div className="knob"></div>
                     <div className="knob"></div>
                     <div className="knob"></div>
                   </div>
-                  <div className="corner-text corner-right">{data.website || "www.yoursite.com"}</div>
                 </div>
                 <svg className="wave-line">
                   <path d="M0,60 L20,60 Q40,60 40,40 L40,30 Q40,10 60,10 L540,10 Q560,10 560,30 L560,40 Q560,60 580,60 L600,60" fill="none" stroke="#CCC" strokeWidth="1" />
@@ -580,7 +579,7 @@ function PreviewContent() {
       </div>
 
       <div className="mt-4 text-center text-white/70 text-sm">
-        Tap to flip • Double-tap to zoom
+        Tap to zoom • Double-tap to flip
       </div>
 
       <button 
