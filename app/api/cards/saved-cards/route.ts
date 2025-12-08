@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ cards: [] });
     }
 
+    // User's internal ID
     const internalUserId = userResult[0].id;
 
     const cards = await sql`
