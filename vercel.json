@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "PRISMA_GENERATE_DATAPROXY": "true",
+    "DATABASE_URL": "@database_url_pooled"
+  }
+}
