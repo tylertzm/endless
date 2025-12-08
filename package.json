@@ -9,10 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@auth0/nextjs-auth0": "^4.13.2",
+    "@neondatabase/serverless": "^1.0.2",
+    "@paralleldrive/cuid2": "^3.0.4",
+    "@prisma/client": "5",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@stackframe/stack": "^2.8.54",
     "@types/html2canvas": "^1.0.0",
     "html2canvas": "^1.4.1",
     "next": "16.0.7",
+    "prisma": "5",
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0"

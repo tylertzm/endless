@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  stackAuthId String @unique @map("stack_auth_id")
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cards Card[]
+  savedCards SavedCard[]
+
+  @@map("users")
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  userId    String @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  title     String?
+  company   String?
+  phone     String?
+  email     String?
+  website   String?
+  address   String?
+  socials   Json? // Array of {platform, handle, label}
+  imageData String? @map("image_data") // Base64 encoded image for QR code
+  style     String? @default("kosma")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  savedBy SavedCard[]
+
+  @@map("cards")
+}
+
+model SavedCard {
+  id        String   @id @default(cuid())
+  userId    String @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardId    String @map("card_id")
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  savedAt   DateTime @default(now()) @map("saved_at")
+
+  @@unique([userId, cardId])
+  @@map("saved_cards")
+}

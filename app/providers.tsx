@@ -1,7 +1,12 @@
 'use client';
 
-import { Auth0Provider } from '@auth0/nextjs-auth0/client';
+import { StackProvider } from '@stackframe/stack';
+import { stackClientApp } from '../lib/stack-client';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <Auth0Provider>{children}</Auth0Provider>;
+  return (
+    <StackProvider app={stackClientApp}>
+      {children}
+    </StackProvider>
+  );
 }

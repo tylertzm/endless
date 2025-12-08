@@ -5,6 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import FluidBackground from "./FluidBackground";
+import { useUser, SignIn, SignUp } from '@stackframe/stack';
+import * as Tooltip from '@radix-ui/react-tooltip';
 
 interface SocialLink {
   platform: string;
@@ -22,6 +24,7 @@ interface CardData {
   address: string;
   socials: SocialLink[];
   style?: 'kosma';
+  imageData?: string;
 }
 
 const STEP_KEYS = [
@@ -39,6 +42,8 @@ const STEP_KEYS = [
 const styles = ["kosma"] as const;
 
 export default function Home() {
+  const user = useUser();
+
   const [cardData, setCardData] = useState<CardData>({
     name: "",
     title: "",
@@ -48,7 +53,13 @@ export default function Home() {
     website: "",
     address: "",
     socials: [],
+    imageData: undefined,
   });
+
+  const [savedCardId, setSavedCardId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [styleIndex, setStyleIndex] = useState(0);
@@ -62,6 +73,25 @@ export default function Home() {
   const clickCountRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [steps] = useState<string[]>(STEP_KEYS);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.user-menu-container')) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -90,6 +120,35 @@ export default function Home() {
     }
   }, []);
 
+  // Load edit card data if available
+  useEffect(() => {
+    const editData = localStorage.getItem('edit_card_data');
+    if (editData) {
+      try {
+        const card = JSON.parse(editData);
+        // Transform the card data to match our form structure
+        const formData: CardData = {
+          name: card.name || '',
+          title: card.title || '',
+          company: card.company || '',
+          phone: card.phone || '',
+          email: card.email || '',
+          website: card.website || '',
+          address: card.address || '',
+          socials: card.socials ? (Array.isArray(card.socials) ? card.socials : []) : [],
+          imageData: card.image_data || card.imageData || undefined,
+        };
+        setCardData(formData);
+        setSavedCardId(card.id); // Store the card ID for updating
+        setCurrentStep(STEP_KEYS.length - 1); // Go to the last step (preview)
+        // Clear the edit data
+        localStorage.removeItem('edit_card_data');
+      } catch (e) {
+        console.error("Failed to parse edit card data", e);
+      }
+    }
+  }, []);
+
   // Save to localStorage on change
   useEffect(() => {
     try {
@@ -107,6 +166,18 @@ export default function Home() {
     localStorage.setItem('remember_style_index', styleIndex.toString());
   }, [styleIndex]);
 
+  // Show loading while checking auth status
+  if (user === undefined) {
+    return (
+      <>
+        <FluidBackground />
+        <div className="h-screen flex items-center justify-center">
+          <div className="text-white">Loading...</div>
+        </div>
+      </>
+    );
+  }
+
   const cardStyle = styles[styleIndex];
 
   const handleInputChange = (field: keyof CardData, value: string) => {
@@ -118,6 +189,13 @@ export default function Home() {
     const firstName = nameParts.slice(0, -1).join(' ') || nameParts[0];
     const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
     let vCardData = 'BEGIN:VCARD\nVERSION:3.0\nN:' + lastName + ';' + firstName + ';;;\nFN:' + cardData.name + '\nTITLE:' + cardData.title + '\nORG:' + cardData.company + '\nTEL:' + cardData.phone + '\nEMAIL:' + cardData.email + '\nURL:' + cardData.website + '\nADR:' + cardData.address.replace(/\n/g, ';');
+
+    // Add photo if available
+    if (cardData.imageData) {
+      // Extract base64 data from data URL (remove "data:image/jpeg;base64," prefix)
+      const base64Data = cardData.imageData.split(',')[1];
+      vCardData += '\nPHOTO;ENCODING=b;TYPE=JPEG:' + base64Data;
+    }
 
     cardData.socials.forEach(social => {
       let url = '';
@@ -154,17 +232,17 @@ export default function Home() {
   };
 
   const exportAsPNG = async () => {
+    if (!savedCardId) {
+      alert('Please save the card first.');
+      return;
+    }
+
     console.log('Starting QR code export...');
     try {
-      // Generate Master QR Code for the back of the card
-      // This encodes the card data into a URL parameter for the website to render
-      const exportData = { ...cardData, style: cardStyle };
-      const encodedData = btoa(JSON.stringify(exportData));
-      const uuid = crypto.randomUUID();
-      // Use the production domain for the QR code
-      const masterUrl = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
-      console.log('Generating QR code for URL:', masterUrl);
-      const masterQrDataUrl = await QRCode.toDataURL(masterUrl, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
+      // Generate QR Code for the saved card
+      const url = `${window.location.origin}/c/${savedCardId}`;
+      console.log('Generating QR code for URL:', url);
+      const qrDataUrl = await QRCode.toDataURL(url, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
       console.log('QR code generated successfully');
 
       // Create a temporary div for the QR code image
@@ -182,8 +260,8 @@ export default function Home() {
       tempDiv.style.padding = '30px 20px';
       tempDiv.innerHTML = `
         <div style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 700; color: #FFFFFF; margin-bottom: 20px; letter-spacing: 2px;">ENDLESS</div>
-        <img src="${masterQrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 16px;" />
-        <div style="font-family: Arial, sans-serif; font-size: 9px; color: #FFFFFF; opacity: 0.8; text-align: center; word-break: break-all; padding: 0 20px; line-height: 1.4;">${masterUrl}</div>
+        <img src="${qrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 16px;" />
+        <div style="font-family: Arial, sans-serif; font-size: 9px; color: #FFFFFF; opacity: 0.8; text-align: center; word-break: break-all; padding: 0 20px; line-height: 1.4;">${url}</div>
       `;
 
       document.body.appendChild(tempDiv);
@@ -214,7 +292,7 @@ export default function Home() {
           
           // Try to copy the URL for convenience (PNG itself cannot be clickable)
           try {
-            navigator.clipboard.writeText(masterUrl)
+            navigator.clipboard.writeText(url)
               .then(() => console.log('Link copied to clipboard'))
               .catch(() => {});
           } catch {}
@@ -239,12 +317,11 @@ export default function Home() {
   };
 
   const copyCardLink = async () => {
-    // Exclude heavy assets like photos from the URL to keep it short
-    const exportData = { ...cardData, style: cardStyle };
-    const encodedData = btoa(JSON.stringify(exportData));
-    const uuid = crypto.randomUUID();
-    // Use the production domain
-    const url = `https://endless-two.vercel.app/c/${uuid}?data=${encodedData}`;
+    if (!savedCardId) {
+      alert('Please save the card first.');
+      return;
+    }
+    const url = `${window.location.origin}/c/${savedCardId}`;
     
     try {
       await navigator.clipboard.writeText(url);
@@ -252,6 +329,71 @@ export default function Home() {
     } catch (err) {
       console.error('Failed to copy URL: ', err);
       alert('Failed to copy URL. Please copy manually: ' + url);
+    }
+  };
+
+  const saveCard = async () => {
+    if (!user) {
+      alert('You must be logged in to save cards. Please sign in first.');
+      return;
+    }
+
+    console.log('Saving card for user:', user);
+    console.log('Card data:', cardData);
+    console.log('Card style:', cardStyle);
+    console.log('Existing card ID:', savedCardId);
+
+    setSaving(true);
+    try {
+      const requestBody = {
+        ...cardData,
+        style: cardStyle,
+      };
+      console.log('Request body:', requestBody);
+
+      let response;
+      if (savedCardId) {
+        // Update existing card
+        console.log('Updating existing card:', savedCardId);
+        response = await fetch(`/api/cards/${savedCardId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+      } else {
+        // Create new card
+        console.log('Creating new card');
+        response = await fetch('/api/cards', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+      }
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error(`Failed to save card: ${response.status} ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Save result:', result);
+      const { id } = result;
+      setSavedCardId(id);
+      alert(savedCardId ? 'Card updated successfully!' : 'Card saved successfully!');
+    } catch (error) {
+      console.error('Save error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to save card: ${errorMessage}`);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -279,33 +421,123 @@ export default function Home() {
   const nextStyle = () => setStyleIndex((i) => (i + 1) % styles.length);
   const prevStyle = () => setStyleIndex((i) => (i - 1 + styles.length) % styles.length);
 
+  if (!user) {
+    return (
+      <>
+        <FluidBackground />
+        <div className="h-screen flex items-center justify-center p-4">
+          <Tooltip.TooltipProvider>
+            <div className="bg-black/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl max-w-md w-full border border-white/10">
+              <div className="text-center mb-6">
+                <img src="/endless.webp" alt="Endless Logo" className="w-16 h-16 mx-auto mb-4" />
+                <h1 className="text-3xl font-bold text-white mb-2">Welcome to Endless</h1>
+                <p className="text-gray-300">Create and share your digital business cards</p>
+              </div>
+              <div className="space-y-6">
+                <div className="flex justify-center space-x-1 bg-gray-800 p-1 rounded-lg border border-white/10">
+                  <button
+                    onClick={() => setIsSignUp(false)}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                      !isSignUp ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setIsSignUp(true)}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                      isSignUp ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+                <div className="space-y-4 stack-auth-container">
+                  <style jsx global>{`
+                    /* Hide the "last" text badge */
+                    .stack-auth-container .absolute.-top-2.-right-2,
+                    .stack-auth-container span[class*="absolute"][class*="-top-2"][class*="-right-2"],
+                    .stack-auth-container span[class*="bg-blue-500"],
+                    .stack-auth-container .bg-blue-500 {
+                      display: none !important;
+                    }
+                    
+                    /* Hide all loading spinners */
+                    .stack-auth-container [role="status"],
+                    .stack-auth-container [data-loading="true"],
+                    .stack-auth-container [data-state="loading"],
+                    .stack-auth-container .loading,
+                    .stack-auth-container .spinner,
+                    .stack-auth-container svg[class*="spin"],
+                    .stack-auth-container svg[class*="animate-spin"],
+                    .stack-auth-container svg.animate-spin,
+                    .stack-auth-container *[aria-busy="true"],
+                    .stack-auth-container *[class*="rotating"],
+                    .stack-auth-container div[class*="loading"],
+                    .stack-auth-container div[class*="spinner"] {
+                      display: none !important;
+                      visibility: hidden !important;
+                      opacity: 0 !important;
+                    }
+                  `}</style>
+                  {isSignUp ? <SignUp /> : <SignIn />}
+                </div>
+              </div>
+            </div>
+          </Tooltip.TooltipProvider>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <FluidBackground />
       <div className="h-screen px-4  flex-col">
-        {/* Header with login button */}
-{/* <div className="relative">
-  {!isLoading && (
-    user ? (
-      <div className="absolute top-4 right-4 flex items-center space-x-4">
-        <span className="text-white">Welcome, {user.name}!</span>
-        <a
-          href="/api/auth/logout"
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-        >
-          Logout
-        </a>
-      </div>
-    ) : (
-      <a
-        href="/api/auth/login"
-        className="absolute top-4 right-4 bg-black-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
-      >
-        Login
-      </a>
-    )
-  )}
-</div> */}
+        {/* Header with user info */}
+        <div className="relative pt-4 pb-6">
+          <div className="flex items-center justify-between px-4">
+            <div className="flex items-center gap-3">
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-sm hover:opacity-80 transition-opacity"
+                >
+                  {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                </button>
+                
+                {/* User Menu Dropdown */}
+                {userMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-48 bg-black/95 border border-white/10 rounded-lg shadow-xl backdrop-blur-lg z-50">
+                    <div className="p-2">
+                      <div className="px-3 py-2 text-white text-sm font-medium border-b border-white/10 mb-2">
+                        {user.displayName || 'User'}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          window.location.href = '/profile';
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded transition-colors"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          user.signOut();
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       <style jsx>{`
         .card-front {
           background-color: #EAEAE6;
@@ -989,7 +1221,7 @@ export default function Home() {
                             <div key={plat} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                               <button
                                 onClick={() => setPlatformPopup({ platform: plat, handle: existing?.handle || '', platformName: plat === 'Other' ? '' : undefined })}
-                                style={{ padding: '10px', borderRadius: '10px', fontSize: '13px', background: selected ? '#ff8c00' : 'transparent', color: selected ? '#000' : '#fff', border: '1px solid rgba(255,255,255,0.06)' }}
+                                style={{ padding: '10px', borderRadius: '10px', fontSize: '13px', background: selected ? '#ff8c00' : 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.06)' }}
                                 title={plat}
                               >
                                 {label}
@@ -1064,11 +1296,73 @@ export default function Home() {
               {steps[currentStep] === 'preview' && (
                 <div>
                   <div className="question">✨ Done!</div>
-                  <div className="small">This is the final preview of your digital business card. Export when ready.</div>
+                  <div className="small">This is the final preview of your digital business card. Save it to generate your QR code.</div>
+                  
+                  {/* Image Upload Section */}
+                  <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div className="text-sm text-white/70 mb-3">📸 Add a picture to show on your QR code (optional)</div>
+                    <div className="flex gap-3">
+                      <label className="flex-1 cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const imageData = event.target?.result as string;
+                                setCardData(prev => ({ ...prev, imageData }));
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        <div className="px-4 py-2 bg-black border border-orange-400 text-orange-400 rounded hover:bg-orange-400 hover:text-black transition-colors text-center text-sm font-medium">
+                          Choose Image
+                        </div>
+                      </label>
+                      {cardData.imageData && (
+                        <button
+                          onClick={() => setCardData(prev => ({ ...prev, imageData: undefined }))}
+                          className="px-4 py-2 bg-black border border-orange-400 text-orange-400 rounded hover:bg-orange-400 hover:text-black transition-colors text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    {cardData.imageData && (
+                      <div className="mt-3">
+                        <img src={cardData.imageData} alt="Preview" className="w-20 h-20 rounded object-cover" />
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="mt-4 flex gap-2 flex-wrap">
-                    <button onClick={exportAsVCard} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Export as Contact</button>
-                    <button onClick={exportAsPNG} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Save QR Code</button>
-                    <button onClick={copyCardLink} className=" hover:bg-orange-400 text-white font-bold py-2 px-4 rounded">Copy Link</button>
+                    {!savedCardId ? (
+                      <button 
+                        onClick={saveCard} 
+                        disabled={saving}
+                        className="bg-black border-2 border-white text-white hover:bg-white hover:text-black font-bold py-2 px-4 rounded transition-colors disabled:opacity-50"
+                      >
+                        {saving ? 'Saving...' : 'Save Card'}
+                      </button>
+                    ) : (
+                      <>
+                        <div className="text-white text-sm mb-2">Edit mode - use Back button to modify fields, then Update Card</div>
+                        <button 
+                          onClick={saveCard} 
+                          disabled={saving}
+                          className="bg-black border-2 border-white text-white hover:bg-white hover:text-black font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 mr-2"
+                        >
+                          {saving ? 'Updating...' : 'Update Card'}
+                        </button>
+                        <button onClick={exportAsVCard} className="bg-black border-2 border-white text-white hover:bg-white hover:text-black font-bold py-2 px-4 rounded transition-colors">Export as Contact</button>
+                        <button onClick={exportAsPNG} className="bg-black border-2 border-white text-white hover:bg-white hover:text-black font-bold py-2 px-4 rounded transition-colors">Save QR Code</button>
+                        <button onClick={copyCardLink} className="bg-black border-2 border-white text-white hover:bg-white hover:text-black font-bold py-2 px-4 rounded transition-colors">Copy Link</button>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -1181,7 +1475,15 @@ export default function Home() {
                             </div>
                           )}
                           <div className="kosma-topo-symbol-container">
-                            <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
+                            {cardData.imageData ? (
+                              <img 
+                                src={cardData.imageData} 
+                                alt="Profile" 
+                                className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
+                              />
+                            ) : (
+                              <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
+                            )}
                           </div>
                           <div className="kosma-logo-text-bottom">
                             {cardData.name && <span>{cardData.name}</span>}

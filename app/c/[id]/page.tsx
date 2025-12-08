@@ -4,6 +4,7 @@
 import { useEffect, useMemo, Suspense, useState, useRef } from 'react';
 import Head from 'next/head';
 import { useSearchParams, useParams } from 'next/navigation';
+import { useUser } from '@stackframe/stack';
 
 interface SocialLink {
   platform: string;
@@ -20,6 +21,7 @@ interface CardData {
   website: string;
   address: string;
   socials: SocialLink[];
+  imageData?: string;
   style?: 'kosma';
 }
 
@@ -30,19 +32,37 @@ interface HistoryItem {
 }
 
 function CardContent() {
-  const searchParams = useSearchParams();
   const params = useParams();
+  const id = params.id as string;
+  const user = useUser();
 
-  const data = useMemo(() => {
-    const encodedData = searchParams.get('data');
-    if (!encodedData) return null;
-    try {
-      return JSON.parse(atob(encodedData)) as CardData;
-    } catch (e) {
-      console.error('Failed to decode card data', e);
-      return null;
+  const [data, setData] = useState<CardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchCard = async () => {
+      try {
+        const response = await fetch(`/api/cards/${id}`);
+        if (!response.ok) {
+          throw new Error('Card not found');
+        }
+        const cardData = await response.json();
+        setData(cardData);
+      } catch (err) {
+        console.error('Failed to fetch card:', err);
+        setError('Card not found');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCard();
     }
-  }, [searchParams]);
+  }, [id]);
 
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
@@ -91,6 +111,13 @@ function CardContent() {
     vCardData += `URL:${data.website}\n`;
     vCardData += `ADR:;;${(data.address || '').replace(/\n/g, ';')};;;;\n`;
     
+    // Add photo if available
+    if (data.imageData) {
+      // Extract base64 data from data URL (remove "data:image/jpeg;base64," prefix)
+      const base64Data = data.imageData.split(',')[1];
+      vCardData += `PHOTO;ENCODING=b;TYPE=JPEG:${base64Data}\n`;
+    }
+    
     if (data.socials) {
       data.socials.forEach(social => {
         let url = '';
@@ -119,6 +146,46 @@ function CardContent() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  const handleSaveToProfile = async () => {
+    if (!user) {
+      window.location.href = '/';
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/cards/${id}/save`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        setIsSaved(true);
+        alert('Card saved to your profile!');
+      } else {
+        const data = await response.json();
+        if (data.error === 'Card already saved') {
+          setIsSaved(true);
+          alert('You already have this card saved!');
+        } else {
+          throw new Error('Failed to save');
+        }
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Failed to save card. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+  }
+
+  if (error || !data) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Card not found</div>;
+  }
 
   return (
     <>
@@ -439,7 +506,15 @@ function CardContent() {
                   </div>
                 )}
                 <div className="kosma-topo-symbol-container">
-                  <div className="kosma-topo-k">{data.name ? data.name.charAt(0).toUpperCase() : "K"}</div>
+                  {data.imageData ? (
+                    <img 
+                      src={data.imageData} 
+                      alt="Profile" 
+                      className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
+                    />
+                  ) : (
+                    <div className="kosma-topo-k">{data.name ? data.name.charAt(0).toUpperCase() : "K"}</div>
+                  )}
                 </div>
                 <div className="kosma-logo-text-bottom">
                   {data.name && <span>{data.name}</span>}
@@ -493,17 +568,33 @@ function CardContent() {
         Tap to flip • Double-tap to zoom
       </div>
 
-      <button 
-        onClick={saveContact}
-        className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-          <polyline points="17 21 17 13 7 13 7 21"></polyline>
-          <polyline points="7 3 7 8 15 8"></polyline>
-        </svg>
-        Save Contact
-      </button>
+      <div className="mt-8 flex gap-4">
+        <button 
+          onClick={saveContact}
+          className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save Contact
+        </button>
+
+        {user && (
+          <button 
+            onClick={handleSaveToProfile}
+            disabled={saving || isSaved}
+            className={`px-8 py-3 font-bold rounded-full transition-colors flex items-center gap-2 ${
+              isSaved 
+                ? 'bg-green-600 text-white cursor-not-allowed' 
+                : 'bg-black border-2 border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black'
+            }`}
+          >
+            {saving ? 'Saving...' : isSaved ? 'Saved!' : 'Save to Profile'}
+          </button>
+        )}
+      </div>
 
       {/* Footer */}
       <footer className="mt-8 mb-4 text-white/50 py-2 text-center text-xs">
