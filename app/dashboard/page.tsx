@@ -241,13 +241,19 @@ export default function DashboardPage() {
   };
 
   const handleEditCard = (card: BusinessCard) => {
-    // Clear any existing creation flags
-    localStorage.removeItem('creating_new_card');
-    localStorage.removeItem('cardData');
-    localStorage.removeItem('cardStyle');
-    localStorage.removeItem('currentStep');
-    // Set the edit data
-    localStorage.setItem('edit_card_data', JSON.stringify(card));
+    // Clear any existing creation flags and large payloads
+    try {
+      localStorage.removeItem('creating_new_card');
+      localStorage.removeItem('cardData');
+      localStorage.removeItem('cardStyle');
+      localStorage.removeItem('currentStep');
+      localStorage.removeItem('edit_card_data');
+    } catch {}
+
+    // Store only the card ID to avoid quota issues; create page will fetch details
+    try {
+      localStorage.setItem('edit_card_id', card.id);
+    } catch {}
     try {
       // Prefer client-side navigation
       router.push('/create');

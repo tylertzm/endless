@@ -136,32 +136,36 @@ export default function CreatePage() {
     }
   }, []);
 
-  // Load edit card data if available
+  // Load edit card data if available (by ID to avoid quota issues)
   useEffect(() => {
-    const editData = localStorage.getItem('edit_card_data');
-    if (editData) {
-      try {
-        const card = JSON.parse(editData);
-        // Transform the card data to match our form structure
-        const formData: CardData = {
-          name: card.name || '',
-          title: card.title || '',
-          company: card.company || '',
-          phone: card.phone || '',
-          email: card.email || '',
-          website: card.website || '',
-          address: card.address || '',
-          socials: card.socials ? (Array.isArray(card.socials) ? card.socials : []) : [],
-          imageData: card.image_data || card.imageData || undefined,
-        };
-        setCardData(formData);
-        setSavedCardId(card.id); // Store the card ID for updating
-        setCurrentStep(STEP_KEYS.length - 1); // Go to the last step (preview)
-        // Clear the edit data
-        localStorage.removeItem('edit_card_data');
-      } catch (e) {
-        console.error("Failed to parse edit card data", e);
-      }
+    const editId = localStorage.getItem('edit_card_id');
+    if (editId) {
+      const fetchCard = async () => {
+        try {
+          const res = await fetch(`/api/cards/${editId}`, { cache: 'no-cache' });
+          if (!res.ok) return;
+          const card = await res.json();
+          const formData: CardData = {
+            name: card.name || '',
+            title: card.title || '',
+            company: card.company || '',
+            phone: card.phone || '',
+            email: card.email || '',
+            website: card.website || '',
+            address: card.address || '',
+            socials: Array.isArray(card.socials) ? card.socials : [],
+            imageData: card.image_data || card.imageData || undefined,
+          };
+          setCardData(formData);
+          setSavedCardId(card.id);
+          setCurrentStep(STEP_KEYS.length - 1);
+        } catch (e) {
+          console.error('Failed to fetch card for edit', e);
+        } finally {
+          localStorage.removeItem('edit_card_id');
+        }
+      };
+      fetchCard();
     }
   }, []);
 
