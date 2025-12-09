@@ -132,7 +132,7 @@ function CardContent() {
       });
     }
 
-    vCardData += `NOTE:Create your own here ;) https://endless-two.vercel.app\n`;
+    vCardData += `NOTE:Create your own here ;) ${process.env.NEXT_PUBLIC_BASE_URL || 'https://endlessproduction.vercel.app'}\n`;
 
     vCardData += 'END:VCARD';
 
@@ -426,7 +426,7 @@ function CardContent() {
       `}</style>
 
       <div className="mb-12">
-         <a href="https://endless-two.vercel.app" target="_blank" rel="noopener noreferrer">
+         <a href={process.env.NEXT_PUBLIC_BASE_URL || "https://endlessproduction.vercel.app"} target="_blank" rel="noopener noreferrer">
            <img src="/endless.webp?v=2" alt="Endless Logo" className="w-32 h-auto cursor-pointer hover:opacity-80 transition-opacity" />
          </a>
       </div>
