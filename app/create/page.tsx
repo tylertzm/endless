@@ -568,6 +568,8 @@ export default function CreatePage() {
       <AppHeader />
       <div className="h-screen px-4 flex-col pt-4">
       <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
+      <style>{`
+        .large-input-wrapper {
           margin-bottom: clamp(4px, 1vw, 10px);
           width: 100%;
         }
@@ -592,7 +594,7 @@ export default function CreatePage() {
         .role {
           font-size: clamp(6px, 1.5vw, 12px);
           color: #555;
-          margin: 0; 
+          margin: 0;
         }
 
         .role span {
@@ -1064,7 +1066,6 @@ export default function CreatePage() {
           transform: rotateY(180deg) scale(1.5);
         }
       `}</style>
-      <div className="h-screen px-4 flex-col pt-4">
         <div className="flex items-center gap-4" style={{ paddingTop: '8px' }}>
           <div className="flex-1">
             <div className="progress" aria-hidden>
