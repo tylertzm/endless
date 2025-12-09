@@ -552,6 +552,21 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col sm:flex-row gap-2 sm:gap-4 max-w-full px-4">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <button 
+            onClick={() => {
+              localStorage.removeItem('edit_card_data');
+              localStorage.setItem('creating_new_card', 'true');
+              window.location.href = '/create';
+            }}
+            className="px-4 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-orange-400 to-pink-500 text-white font-bold rounded-full hover:from-orange-500 hover:to-pink-600 transition-all flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+          >
+            <svg width="16" height="16" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            <span className="hidden xs:inline">Make Yours Here</span>
+            <span className="xs:hidden">Create</span>
+          </button>
+
+          <button 
             onClick={saveContact}
             className="px-4 sm:px-8 py-2 sm:py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
           >
