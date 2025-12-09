@@ -436,14 +436,8 @@ export default function CreatePage() {
   const prevStyle = () => setStyleIndex((i) => (i - 1 + styles.length) % styles.length);
 
   if (user === undefined) {
-    return (
-      <>
-        <FluidBackground />
-        <div className="h-screen flex items-center justify-center">
-          <div className="text-white">Loading...</div>
-        </div>
-      </>
-    );
+    // Avoid showing any loading text; rely on app-level splash/transition
+    return null;
   }
 
   if (!user) {

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -12,7 +13,12 @@ function SplashOverlay({ ready }: { ready: boolean }) {
         ready ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <img src="/endless.webp" alt="Endless" className="w-24 h-24 object-contain" />
+      <img
+        src="/endless.webp"
+        alt="Endless"
+        className="w-16 h-16 md:w-24 md:h-24 object-contain animate-spin animate-pulse"
+        style={{ animationDuration: '1.25s' }}
+      />
     </div>
   );
 }
@@ -23,7 +29,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const onWindowLoad = () => Promise.resolve();
     const waitForWindow =
       document.readyState === 'complete'
         ? Promise.resolve()
@@ -35,7 +40,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
             window.addEventListener('load', handler);
           });
 
-    const waitForFonts = (document as any).fonts?.ready ?? Promise.resolve();
+    const docFonts = (document as unknown as { fonts?: { ready: Promise<void> } }).fonts;
+    const waitForFonts = docFonts?.ready ?? Promise.resolve();
 
     // Lock scroll while splash is visible
     const prevOverflow = document.body.style.overflow;

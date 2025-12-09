@@ -20,14 +20,8 @@ export default function Home() {
   }, [user, router]);
 
   if (user === undefined) {
-    return (
-      <>
-        <FluidBackground />
-        <div className="h-screen flex items-center justify-center">
-          <div className="text-white">Loading...</div>
-        </div>
-      </>
-    );
+    // Defer to global splash; avoid showing any loading text here
+    return null;
   }
 
   // If user exists, we already redirected; render nothing to avoid flash

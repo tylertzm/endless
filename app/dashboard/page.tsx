@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useUser } from '@stackframe/stack';
@@ -210,10 +211,18 @@ export default function DashboardPage() {
   };
 
   if (user === undefined || loading) {
+    // Show background and centered spinning logo while loading
     return (
       <div className="relative min-h-screen bg-black flex items-center justify-center">
         <FluidBackground />
-        <div className="relative z-10 text-white">Loading...</div>
+        <div className="absolute inset-0 grid place-items-center z-10">
+          <img
+            src="/endless.webp"
+            alt="Endless"
+            className="w-12 h-12 md:w-16 md:h-16 object-contain animate-spin animate-pulse"
+            style={{ animationDuration: '1.25s' }}
+          />
+        </div>
       </div>
     );
   }
@@ -243,7 +252,7 @@ export default function DashboardPage() {
                 }}
                 className="btn btn-primary"
               >
-                + 
+                + 💳
               </button>
             </div>
           </div>

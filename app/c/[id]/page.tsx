@@ -273,7 +273,16 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-black grid place-items-center">
+        <img
+          src="/endless.webp"
+          alt="Endless"
+          className="w-12 h-12 md:w-16 md:h-16 object-contain animate-spin animate-pulse"
+          style={{ animationDuration: '1.25s' }}
+        />
+      </div>
+    );
   }
 
   if (error || !data) {
@@ -718,7 +727,18 @@ export default function CardViewer({ searchParams }: { searchParams: { export?: 
   const exportParam = (searchParams?.export || '').toLowerCase();
   const autoExport = exportParam === 'png';
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black grid place-items-center">
+          <img
+            src="/endless.webp"
+            alt="Endless"
+            className="w-12 h-12 md:w-16 md:h-16 object-contain animate-spin animate-pulse"
+            style={{ animationDuration: '1.25s' }}
+          />
+        </div>
+      }
+    >
       <CardContent autoExport={autoExport} />
     </Suspense>
   );
