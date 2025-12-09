@@ -72,6 +72,7 @@ export default function Home() {
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clickCountRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
   const [steps] = useState<string[]>(STEP_KEYS);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -149,21 +150,33 @@ export default function Home() {
     }
   }, []);
 
-  // Save to localStorage on change
+  // Save to localStorage on change - debounced
   useEffect(() => {
-    try {
-      localStorage.setItem('remember_card_data', JSON.stringify(cardData));
-    } catch (e) {
-      console.error('Failed to save card data to localStorage:', e);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem('remember_card_data', JSON.stringify(cardData));
+      } catch (e) {
+        console.error('Failed to save card data to localStorage:', e);
+      }
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
   }, [cardData]);
 
   useEffect(() => {
-    localStorage.setItem('remember_current_step', currentStep.toString());
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('remember_current_step', currentStep.toString());
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [currentStep]);
 
   useEffect(() => {
-    localStorage.setItem('remember_style_index', styleIndex.toString());
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('remember_style_index', styleIndex.toString());
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   }, [styleIndex]);
 
   // Show loading while checking auth status
@@ -722,18 +735,18 @@ export default function Home() {
           margin-bottom: clamp(8px, 1vh, 12px);
           font-weight: 500;
           font-family: 'Modern Prestige', sans-serif;
-          animation: fadeInUp 0.5s ease-out;
+          animation: fadeInUp 0.3s ease-out; /* Reduced from 0.5s */
         }
         .small {
           color: #9CA3AF;
           font-size: clamp(14px, 4vw, 16px);
           margin-bottom: clamp(8px, 1vh, 12px);
-          animation: fadeInUp 0.5s ease-out 0.1s both;
+          animation: fadeInUp 0.3s ease-out 0.1s both; /* Reduced from 0.5s */
         }
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(10px); /* Reduced from 20px */
           }
           to {
             opacity: 1;
@@ -1126,17 +1139,15 @@ export default function Home() {
           margin-bottom: clamp(2px, 0.5vw, 4px);
         }
 
-        /* Auto flip animation: small tilt then full flip then reset */
+        /* Auto flip animation: reduced frequency and duration */
         @keyframes autoFlip {
           0% { transform: rotateY(0deg); }
-          20% { transform: rotateY(20deg); }
           50% { transform: rotateY(180deg); }
-          70% { transform: rotateY(200deg); }
           100% { transform: rotateY(360deg); }
         }
 
         .kosma-card {
-          animation: autoFlip 4s ease-in-out infinite;
+          animation: autoFlip 8s ease-in-out infinite; /* Increased from 4s to 8s */
         }
 
         .kosma-card.flipped {

@@ -3,15 +3,15 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Configuration for the wave simulation
+ * Configuration for the wave simulation - optimized for performance
  */
 const config = {
-  lineCount: 3,
-  segmentLength: 10,
-  amplitude: 100,
-  frequency: 0.002,
-  speed: 0.0005,
-  lineWidth: 2,
+  lineCount: 2, // Reduced from 3
+  segmentLength: 20, // Increased from 10 (fewer segments)
+  amplitude: 60, // Reduced from 100
+  frequency: 0.001, // Reduced from 0.002
+  speed: 0.0003, // Reduced from 0.0005
+  lineWidth: 1.5, // Reduced from 2
   color: '#FFFFFF'
 };
 
@@ -81,6 +81,8 @@ class FluidLine {
 export default function FluidBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
+  const lastFrameTime = useRef<number>(0);
+  const frameInterval = 1000 / 30; // 30 FPS instead of 60
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -110,22 +112,31 @@ export default function FluidBackground() {
       }
     }
 
-    // Animation Loop
-    function animate() {
+    // Optimized Animation Loop with frame rate limiting
+    function animate(currentTime: number) {
       if (!canvas || !ctx) return;
+      
+      // Limit frame rate
+      if (currentTime - lastFrameTime.current < frameInterval) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
+      lastFrameTime.current = currentTime;
+
       // Clear the canvas to transparent so the CSS background-color shows through
       ctx.clearRect(0, 0, width, height);
 
       time += config.speed;
 
-      lines.forEach(line => line.draw(ctx, time * 5, height));
+      lines.forEach(line => line.draw(ctx, time * 3, height)); // Reduced multiplier from 5 to 3
 
       animationRef.current = requestAnimationFrame(animate);
     }
 
     resize();
     initLines();
-    animate();
+    animate(0);
 
     window.addEventListener('resize', () => {
       resize();
