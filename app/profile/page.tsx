@@ -211,9 +211,8 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [profileImage, setProfileImage] = useState('');
-  const [myCards, setMyCards] = useState<BusinessCard[]>([]);
   const [savedCards, setSavedCards] = useState<BusinessCard[]>([]);
-  const [activeTab, setActiveTab] = useState<'my-cards' | 'saved'>('my-cards');
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -231,15 +230,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
   const loadCards = async () => {
     try {
       setLoading(true);
-      const [myCardsRes, savedCardsRes] = await Promise.all([
-        fetch('/api/cards/my-cards'),
-        fetch('/api/cards/saved-cards'),
-      ]);
-
-      if (myCardsRes.ok) {
-        const data = await myCardsRes.json();
-        setMyCards(data.cards || []);
-      }
+      const savedCardsRes = await fetch('/api/cards/saved-cards');
 
       if (savedCardsRes.ok) {
         const data = await savedCardsRes.json();
@@ -265,29 +256,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
     }
   };
 
-  const handleDeleteCard = async (cardId: string) => {
-    if (!confirm('Are you sure you want to delete this card?')) return;
 
-    try {
-      const res = await fetch(`/api/cards/${cardId}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        setMyCards(myCards.filter(card => card.id !== cardId));
-      }
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-    }
-  };
-
-  const handleEditCard = (card: BusinessCard) => {
-    // Store the card data in localStorage to be loaded by the main page
-    localStorage.setItem('edit_card_data', JSON.stringify(card));
-    localStorage.setItem('creating_new_card', 'true'); // Mark as editing
-    // Navigate to the main page
-    router.push('/create');
-  };
 
   const handleUnsaveCard = async (cardId: string) => {
     try {
@@ -401,132 +370,51 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setActiveTab('my-cards')}
-              className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors ${
-                activeTab === 'my-cards'
-                  ? 'bg-black border-2 border-white text-white'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-            >
-              My Cards ({myCards.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('saved')}
-              className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors ${
-                activeTab === 'saved'
-                  ? 'bg-black border-2 border-white text-white'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-            >
-              Saved Cards ({savedCards.length})
-            </button>
-          </div>
-
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeTab === 'my-cards' ? (
-              myCards.length === 0 ? (
-                <div className="col-span-full text-center py-12 text-white/50">
-                  <p className="mb-4">You haven&apos;t created any cards yet</p>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('edit_card_data');
-                      localStorage.setItem('creating_new_card', 'true');
-                      router.push('/create');
-                    }}
-                    className="btn btn-primary"
-                  >
-                    Create Your First Card
-                  </button>
-                </div>
-              ) : (
-                myCards.map((card) => (
-                  <div
-                    key={card.id}
-                    className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/15 transition-colors"
-                  >
-                    <div className="flex gap-4">
-                      {/* Card Thumbnail */}
-                      <div className="flex-shrink-0 w-32">
-                        <CardThumbnail 
-                          card={card}
-                          onView={() => router.push(`/c/${card.id}`)}
-                          onEdit={() => handleEditCard(card)}
-                          onDelete={() => handleDeleteCard(card.id)}
-                        />
-                      </div>
-                      
-                      {/* Card Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
-                            <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
-                            <p className="text-white/50 text-sm">{card.company}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          {card.email && (
-                            <p className="text-white/70 text-sm">{card.email}</p>
-                          )}
-                          {card.phone && (
-                            <p className="text-white/70 text-sm">{card.phone}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )
+            {savedCards.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-white/50">
+                You haven&apos;t saved any cards yet
+              </div>
             ) : (
-              savedCards.length === 0 ? (
-                <div className="col-span-full text-center py-12 text-white/50">
-                  You haven&apos;t saved any cards yet
-                </div>
-              ) : (
-                savedCards.map((card) => (
-                  <div
-                    key={card.id}
-                    className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/15 transition-colors"
-                  >
-                    <div className="flex gap-4">
-                      {/* Card Thumbnail */}
-                      <div className="flex-shrink-0 w-32">
-                        <CardThumbnail 
-                          card={card}
-                          onView={() => router.push(`/c/${card.id}`)}
-                          onUnsave={() => handleUnsaveCard(card.id)}
-                          showUnsave={true}
-                        />
+              savedCards.map((card) => (
+                <div
+                  key={card.id}
+                  className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/15 transition-colors"
+                >
+                  <div className="flex gap-4">
+                    {/* Card Thumbnail */}
+                    <div className="flex-shrink-0 w-32">
+                      <CardThumbnail 
+                        card={card}
+                        onView={() => router.push(`/c/${card.id}`)}
+                        onUnsave={() => handleUnsaveCard(card.id)}
+                        showUnsave={true}
+                      />
+                    </div>
+                    
+                    {/* Card Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
+                          <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
+                          <p className="text-white/50 text-sm">{card.company}</p>
+                        </div>
                       </div>
                       
-                      {/* Card Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
-                            <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
-                            <p className="text-white/50 text-sm">{card.company}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          {card.email && (
-                            <p className="text-white/70 text-sm">{card.email}</p>
-                          )}
-                          {card.phone && (
-                            <p className="text-white/70 text-sm">{card.phone}</p>
-                          )}
-                        </div>
+                      <div className="space-y-2">
+                        {card.email && (
+                          <p className="text-white/70 text-sm">{card.email}</p>
+                        )}
+                        {card.phone && (
+                          <p className="text-white/70 text-sm">{card.phone}</p>
+                        )}
                       </div>
                     </div>
                   </div>
-                ))
-              )
+                </div>
+              ))
             )}
           </div>
         </div>
