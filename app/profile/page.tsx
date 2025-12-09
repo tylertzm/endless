@@ -6,6 +6,12 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import FluidBackground from '../FluidBackground';
 
+interface SocialLink {
+  platform: string;
+  handle: string;
+  label: string;
+}
+
 interface BusinessCard {
   id: string;
   name: string;
@@ -15,16 +21,50 @@ interface BusinessCard {
   email?: string;
   website?: string;
   address?: string;
-  socials?: Array<{
-    platform: string;
-    handle: string;
-    label: string;
-  }>;
+  socials?: SocialLink[];
   image_data?: string;
   imageData?: string;
   style?: string;
   created_at: string;
 }
+
+// Card Thumbnail Component
+const CardThumbnail = ({ card }: { card: BusinessCard }) => {
+  return (
+    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10">
+      <div className="w-full h-full p-3 flex flex-col justify-between">
+        {/* Top section with company and profile image/initial */}
+        <div className="flex justify-between items-start">
+          {card.company && (
+            <div className="text-xs font-semibold text-white/80 truncate max-w-[60%]">
+              {card.company}
+            </div>
+          )}
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            {card.image_data || card.imageData ? (
+              <Image
+                src={card.image_data || card.imageData!}
+                alt="Profile"
+                width={32}
+                height={32}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-xs font-bold text-white">
+                {card.name ? card.name.charAt(0).toUpperCase() : "K"}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom section with name */}
+        <div className="text-sm font-bold text-white truncate">
+          {card.name}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function ProfilePage() {
   const user = useUser();
@@ -262,42 +302,52 @@ export default function ProfilePage() {
                     key={card.id}
                     className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/15 transition-colors"
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
-                        <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
-                        <p className="text-white/50 text-sm">{card.company}</p>
+                    <div className="flex gap-4">
+                      {/* Card Thumbnail */}
+                      <div className="flex-shrink-0 w-32">
+                        <CardThumbnail card={card} />
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2 mb-4">
-                      {card.email && (
-                        <p className="text-white/70 text-sm">{card.email}</p>
-                      )}
-                      {card.phone && (
-                        <p className="text-white/70 text-sm">{card.phone}</p>
-                      )}
-                    </div>
+                      
+                      {/* Card Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
+                            <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
+                            <p className="text-white/50 text-sm">{card.company}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-4">
+                          {card.email && (
+                            <p className="text-white/70 text-sm">{card.email}</p>
+                          )}
+                          {card.phone && (
+                            <p className="text-white/70 text-sm">{card.phone}</p>
+                          )}
+                        </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => router.push(`/c/${card.id}`)}
-                        className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                      >
-                        View Card
-                      </button>
-                      <button
-                        onClick={() => handleEditCard(card)}
-                        className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCard(card.id)}
-                        className="px-4 py-2 bg-black border-2 border-red-400 text-red-400 rounded-lg transition-colors hover:bg-red-400 hover:text-black text-sm"
-                      >
-                        Delete
-                      </button>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => router.push(`/c/${card.id}`)}
+                            className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
+                          >
+                            View Card
+                          </button>
+                          <button
+                            onClick={() => handleEditCard(card)}
+                            className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCard(card.id)}
+                            className="px-4 py-2 bg-black border-2 border-red-400 text-red-400 rounded-lg transition-colors hover:bg-red-400 hover:text-black text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -313,36 +363,46 @@ export default function ProfilePage() {
                     key={card.id}
                     className="bg-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/15 transition-colors"
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
-                        <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
-                        <p className="text-white/50 text-sm">{card.company}</p>
+                    <div className="flex gap-4">
+                      {/* Card Thumbnail */}
+                      <div className="flex-shrink-0 w-32">
+                        <CardThumbnail card={card} />
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2 mb-4">
-                      {card.email && (
-                        <p className="text-white/70 text-sm">{card.email}</p>
-                      )}
-                      {card.phone && (
-                        <p className="text-white/70 text-sm">{card.phone}</p>
-                      )}
-                    </div>
+                      
+                      {/* Card Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-white mb-1">{card.name}</h3>
+                            <p className="text-white/70 text-sm">{card.title || 'No title'}</p>
+                            <p className="text-white/50 text-sm">{card.company}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-4">
+                          {card.email && (
+                            <p className="text-white/70 text-sm">{card.email}</p>
+                          )}
+                          {card.phone && (
+                            <p className="text-white/70 text-sm">{card.phone}</p>
+                          )}
+                        </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => router.push(`/c/${card.id}`)}
-                        className="flex-1 px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                      >
-                        View Card
-                      </button>
-                      <button
-                        onClick={() => handleUnsaveCard(card.id)}
-                        className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                      >
-                        Unsave
-                      </button>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => router.push(`/c/${card.id}`)}
+                            className="flex-1 px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
+                          >
+                            View Card
+                          </button>
+                          <button
+                            onClick={() => handleUnsaveCard(card.id)}
+                            className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
+                          >
+                            Unsave
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
