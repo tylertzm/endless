@@ -29,12 +29,11 @@ export default function AppHeader() {
 
   return (
     <header className="app-header">
-      <div className="app-header__left" onClick={() => router.push(user ? "/dashboard" : "/")}> 
-        <div className="app-header__brand">
+      <div className="app-header__left" onClick={() => router.push(user ? "/dashboard" : "/")}>
+        <div className="app-header__brand" aria-label="Endless home">
           <div className="app-header__logo">
-            <Image src="/endless.webp" alt="Endless" width={32} height={32} className="rounded" />
+            <Image src="/endless.webp?v=2" alt="Endless" width={32} height={32} className="rounded" />
           </div>
-          <div className="app-header__title">Endless</div>
         </div>
       </div>
       <div className="app-header__right" ref={menuRef}>
