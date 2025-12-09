@@ -28,45 +28,49 @@ interface BusinessCard {
   created_at: string;
 }
 
-// Card Thumbnail Component
+// Card Thumbnail Component - Shows actual card front side design
 const CardThumbnail = ({ card }: { card: BusinessCard }) => {
   return (
-    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10">
-      <div className="w-full h-full p-3 flex flex-col justify-between">
-        {/* Top section with company and profile image/initial */}
-        <div className="flex justify-between items-start">
-          {card.company && (
-            <div className="text-xs font-semibold text-white/80 truncate max-w-[60%]">
-              {card.company}
-            </div>
-          )}
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10 relative">
+      {/* Miniature kosma-style card front */}
+      <div className="w-full h-full flex flex-col p-2" style={{
+        background: 'linear-gradient(135deg, #050505 0%, #1F1F1F 50%, #888888 100%)',
+        position: 'relative'
+      }}>
+        {/* Company header */}
+        {card.company && (
+          <div className="text-xs font-semibold text-white/90 mb-1 text-center">
+            {card.company}
+          </div>
+        )}
+
+        {/* Profile image/initial in center */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/30">
             {card.image_data || card.imageData ? (
               <Image
                 src={card.image_data || card.imageData!}
                 alt="Profile"
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <span className="text-xs font-bold text-white">
+              <span className="text-sm font-bold text-white">
                 {card.name ? card.name.charAt(0).toUpperCase() : "K"}
               </span>
             )}
           </div>
         </div>
 
-        {/* Bottom section with name */}
-        <div className="text-sm font-bold text-white truncate">
+        {/* Name at bottom */}
+        <div className="text-xs font-bold text-white text-center">
           {card.name}
         </div>
       </div>
     </div>
   );
-};
-
-export default function ProfilePage() {
+};export default function ProfilePage() {
   const user = useUser();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
