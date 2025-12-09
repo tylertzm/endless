@@ -254,9 +254,12 @@ export default function DashboardPage() {
               >
                 + 💳
               </button>
-                <p className="text-xs md:text-sm text-purple-300 drop-shadow-[0_0_4px_rgba(168,85,247,0.6)] font-medium tracking-wide">
-                  Cards: <span className="text-white font-semibold">{cards.length}</span>/2
-                </p>
+<p className="text-xs md:text-sm flex items-center gap-2">
+  <span className="text-white/60">Cards</span>
+  <span className="px-2 py-0.5 rounded-full bg-orange-600/30 text-white-300 font-semibold">
+    {cards.length}/2
+  </span>
+</p>
               </div>
           </div>
 
