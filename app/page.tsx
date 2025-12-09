@@ -252,16 +252,16 @@ export default function Home() {
       tempDiv.style.top = '-9999px';
       tempDiv.style.width = '400px';
       tempDiv.style.height = '600px';
-      tempDiv.style.background = 'black';
+      tempDiv.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #C0C0C0 100%)';
       tempDiv.style.display = 'flex';
       tempDiv.style.flexDirection = 'column';
       tempDiv.style.alignItems = 'center';
       tempDiv.style.justifyContent = 'center';
       tempDiv.style.padding = '30px 20px';
       tempDiv.innerHTML = `
-        <div style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 700; color: #FFFFFF; margin-bottom: 20px; letter-spacing: 2px;">ENDLESS</div>
-        <img src="${qrDataUrl}" style="width: 240px; height: 240px; display: block; margin-bottom: 16px;" />
-        <div style="font-family: Arial, sans-serif; font-size: 9px; color: #FFFFFF; opacity: 0.8; text-align: center; word-break: break-all; padding: 0 20px; line-height: 1.4;">${url}</div>
+        <img src="/endless.webp" style="width: 120px; height: auto; margin-bottom: 20px; filter: brightness(0);" />
+        <img src="${qrDataUrl}" style="width: 220px; height: 220px; display: block; margin-bottom: 16px; filter: brightness(0);" />
+        <div style="font-family: Arial, sans-serif; font-size: 9px; color: #000000; opacity: 0.8; text-align: center; word-break: break-all; padding: 0 20px; line-height: 1.4;">${url}</div>
       `;
 
       document.body.appendChild(tempDiv);
@@ -269,7 +269,7 @@ export default function Home() {
       const canvas = await html2canvas(tempDiv, {
         width: 400,
         height: 600,
-        backgroundColor: '#000000',
+        backgroundColor: '#C0C0C0',
         scale: 2,
         useCORS: true,
         allowTaint: true,
