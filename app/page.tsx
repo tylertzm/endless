@@ -150,34 +150,7 @@ export default function Home() {
     }
   }, []);
 
-  // Save to localStorage on change - debounced
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      try {
-        localStorage.setItem('remember_card_data', JSON.stringify(cardData));
-      } catch (e) {
-        console.error('Failed to save card data to localStorage:', e);
-      }
-    }, 500); // Debounce for 500ms
-
-    return () => clearTimeout(timeoutId);
-  }, [cardData]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      localStorage.setItem('remember_current_step', currentStep.toString());
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [currentStep]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      localStorage.setItem('remember_style_index', styleIndex.toString());
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [styleIndex]);
+  // Only save to localStorage when explicitly working on a card (not automatic)
 
   // Show loading while checking auth status
   if (user === undefined) {
@@ -358,6 +331,14 @@ export default function Home() {
 
     setSaving(true);
     try {
+      // Save to localStorage as backup before database operation
+      localStorage.setItem('cardData', JSON.stringify(cardData));
+      localStorage.setItem('cardStyle', JSON.stringify(cardStyle));
+      localStorage.setItem('currentStep', currentStep.toString());
+      if (savedCardId) {
+        localStorage.setItem('savedCardId', savedCardId);
+      }
+
       const requestBody = {
         ...cardData,
         style: cardStyle,
@@ -400,6 +381,13 @@ export default function Home() {
       console.log('Save result:', result);
       const { id } = result;
       setSavedCardId(id);
+      
+      // Clear localStorage after successful database save
+      localStorage.removeItem('cardData');
+      localStorage.removeItem('cardStyle');
+      localStorage.removeItem('currentStep');
+      localStorage.removeItem('savedCardId');
+      
       alert(savedCardId ? 'Card updated successfully!' : 'Card saved successfully!');
     } catch (error) {
       console.error('Save error:', error);
