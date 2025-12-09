@@ -104,7 +104,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
               e.stopPropagation();
               setMenuOpen(!menuOpen);
             }}
-            className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+            className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors"
           >
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <circle cx="12" cy="5" r="2"/>
