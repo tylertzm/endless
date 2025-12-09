@@ -95,13 +95,6 @@ export default function AppHeader() {
 
             <button 
               className="menu-item" 
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/dashboard"); }}
-              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/dashboard"); }}
-            >
-              Dashboard
-            </button>
-            <button 
-              className="menu-item" 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); localStorage.removeItem('cardData'); localStorage.removeItem('cardStyle'); localStorage.removeItem('currentStep'); localStorage.removeItem('savedCardId'); localStorage.removeItem('creating_new_card'); router.push("/create"); }}
               onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); localStorage.removeItem('cardData'); localStorage.removeItem('cardStyle'); localStorage.removeItem('currentStep'); localStorage.removeItem('savedCardId'); localStorage.removeItem('creating_new_card'); router.push("/create"); }}
             >
@@ -120,6 +113,13 @@ export default function AppHeader() {
               onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/plans"); }}
             >
               Plans & Usage
+            </button>
+            <button 
+              className="menu-item" 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/impressum"); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/impressum"); }}
+            >
+              Privacy Policy
             </button>
             <button 
               className="menu-item" 

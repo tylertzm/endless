@@ -567,7 +567,7 @@ export default function CreatePage() {
       <FluidBackground />
       <AppHeader />
       <div className="h-screen px-4 flex-col pt-4">
-      <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
+        <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
       <style>{`
         .large-input-wrapper {
           margin-bottom: clamp(4px, 1vw, 10px);
