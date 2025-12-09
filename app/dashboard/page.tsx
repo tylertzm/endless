@@ -248,7 +248,21 @@ export default function DashboardPage() {
     localStorage.removeItem('currentStep');
     // Set the edit data
     localStorage.setItem('edit_card_data', JSON.stringify(card));
-    router.push('/create');
+    try {
+      // Prefer client-side navigation
+      router.push('/create');
+      // In some mobile browsers, immediate navigation after touch events can be ignored.
+      // Use a short fallback to ensure navigation occurs.
+      setTimeout(() => {
+        if (typeof window !== 'undefined' && window.location.pathname !== '/create') {
+          window.location.href = '/create';
+        }
+      }, 50);
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/create';
+      }
+    }
   };
 
   if (user === undefined || loading) {
