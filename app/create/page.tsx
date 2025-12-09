@@ -169,6 +169,26 @@ export default function CreatePage() {
     }
   }, []);
 
+  // Auto-resize textareas downward on input and when content changes
+  useEffect(() => {
+    const resize = (el: HTMLTextAreaElement) => {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    };
+
+    const textareas = Array.from(document.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    textareas.forEach((ta) => {
+      resize(ta);
+      ta.addEventListener('input', () => resize(ta));
+    });
+
+    return () => {
+      textareas.forEach((ta) => {
+        ta.removeEventListener('input', () => resize(ta));
+      });
+    };
+  }, [cardData]);
+
   const cardStyle = styles[styleIndex];
 
   const handleInputChange = (field: keyof CardData, value: string) => {
@@ -1258,7 +1278,6 @@ export default function CreatePage() {
                         </button>
                       ) : (
                         <>
-                          <div className="text-white text-sm mb-2">Edit mode - use Back button to modify fields, then Update Card</div>
                           <button 
                             onClick={saveCard} 
                             disabled={saving}
