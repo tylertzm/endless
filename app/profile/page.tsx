@@ -2,7 +2,7 @@
 
 import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import FluidBackground from '../FluidBackground';
 
@@ -29,9 +29,35 @@ interface BusinessCard {
 }
 
 // Card Thumbnail Component - Shows actual card front side design
-const CardThumbnail = ({ card }: { card: BusinessCard }) => {
+const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = false }: { 
+  card: BusinessCard;
+  onView: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onUnsave?: () => void;
+  showUnsave?: boolean;
+}) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
+
   return (
-    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10 relative">
+    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10 relative group">
       {/* Miniature kosma-style card front */}
       <div className="w-full h-full flex flex-col p-2" style={{
         background: 'linear-gradient(135deg, #050505 0%, #1F1F1F 50%, #888888 100%)',
@@ -67,6 +93,74 @@ const CardThumbnail = ({ card }: { card: BusinessCard }) => {
         <div className="text-xs font-bold text-white text-center">
           {card.name}
         </div>
+      </div>
+
+      {/* Three dots menu button */}
+      <div className="absolute top-1 right-1" ref={menuRef}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen(!menuOpen);
+          }}
+          className="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+        >
+          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <circle cx="12" cy="19" r="2"/>
+          </svg>
+        </button>
+
+        {/* Dropdown menu */}
+        {menuOpen && (
+          <div className="absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-md rounded-lg shadow-xl border border-white/20 overflow-hidden z-10">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                onView();
+              }}
+              className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+            >
+              View
+            </button>
+            {onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onEdit();
+                }}
+                className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+              >
+                Edit
+              </button>
+            )}
+            {showUnsave && onUnsave ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onUnsave();
+                }}
+                className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+              >
+                Unsave
+              </button>
+            ) : onDelete ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onDelete();
+                }}
+                className="w-full px-3 py-2 text-left text-red-400 hover:bg-white/10 transition-colors text-xs"
+              >
+                Delete
+              </button>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -149,6 +243,7 @@ const CardThumbnail = ({ card }: { card: BusinessCard }) => {
   const handleEditCard = (card: BusinessCard) => {
     // Store the card data in localStorage to be loaded by the main page
     localStorage.setItem('edit_card_data', JSON.stringify(card));
+    localStorage.setItem('creating_new_card', 'true'); // Mark as editing
     // Navigate to the main page
     router.push('/');
   };
@@ -309,7 +404,12 @@ const CardThumbnail = ({ card }: { card: BusinessCard }) => {
                     <div className="flex gap-4">
                       {/* Card Thumbnail */}
                       <div className="flex-shrink-0 w-32">
-                        <CardThumbnail card={card} />
+                        <CardThumbnail 
+                          card={card}
+                          onView={() => router.push(`/c/${card.id}`)}
+                          onEdit={() => handleEditCard(card)}
+                          onDelete={() => handleDeleteCard(card.id)}
+                        />
                       </div>
                       
                       {/* Card Info */}
@@ -322,34 +422,13 @@ const CardThumbnail = ({ card }: { card: BusinessCard }) => {
                           </div>
                         </div>
                         
-                        <div className="space-y-2 mb-4">
+                        <div className="space-y-2">
                           {card.email && (
                             <p className="text-white/70 text-sm">{card.email}</p>
                           )}
                           {card.phone && (
                             <p className="text-white/70 text-sm">{card.phone}</p>
                           )}
-                        </div>
-
-                        <div className="flex gap-2 flex-wrap">
-                          <button
-                            onClick={() => router.push(`/c/${card.id}`)}
-                            className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                          >
-                            View Card
-                          </button>
-                          <button
-                            onClick={() => handleEditCard(card)}
-                            className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCard(card.id)}
-                            className="px-4 py-2 bg-black border-2 border-red-400 text-red-400 rounded-lg transition-colors hover:bg-red-400 hover:text-black text-sm"
-                          >
-                            Delete
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -370,7 +449,12 @@ const CardThumbnail = ({ card }: { card: BusinessCard }) => {
                     <div className="flex gap-4">
                       {/* Card Thumbnail */}
                       <div className="flex-shrink-0 w-32">
-                        <CardThumbnail card={card} />
+                        <CardThumbnail 
+                          card={card}
+                          onView={() => router.push(`/c/${card.id}`)}
+                          onUnsave={() => handleUnsaveCard(card.id)}
+                          showUnsave={true}
+                        />
                       </div>
                       
                       {/* Card Info */}
@@ -383,28 +467,13 @@ const CardThumbnail = ({ card }: { card: BusinessCard }) => {
                           </div>
                         </div>
                         
-                        <div className="space-y-2 mb-4">
+                        <div className="space-y-2">
                           {card.email && (
                             <p className="text-white/70 text-sm">{card.email}</p>
                           )}
                           {card.phone && (
                             <p className="text-white/70 text-sm">{card.phone}</p>
                           )}
-                        </div>
-
-                        <div className="flex gap-2 flex-wrap">
-                          <button
-                            onClick={() => router.push(`/c/${card.id}`)}
-                            className="flex-1 px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                          >
-                            View Card
-                          </button>
-                          <button
-                            onClick={() => handleUnsaveCard(card.id)}
-                            className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black text-sm"
-                          >
-                            Unsave
-                          </button>
                         </div>
                       </div>
                     </div>

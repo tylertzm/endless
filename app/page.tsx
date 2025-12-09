@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from 'next/navigation';
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import FluidBackground from "./FluidBackground";
@@ -43,6 +44,7 @@ const styles = ["kosma"] as const;
 
 export default function Home() {
   const user = useUser();
+  const router = useRouter();
 
   const [cardData, setCardData] = useState<CardData>({
     name: "",
@@ -149,6 +151,17 @@ export default function Home() {
       }
     }
   }, []);
+
+  // Redirect authenticated users to dashboard unless editing a card
+  useEffect(() => {
+    if (user && !localStorage.getItem('edit_card_data')) {
+      // Check if user just logged in (no cards being edited)
+      const isCreatingNew = localStorage.getItem('cardData') || localStorage.getItem('creating_new_card');
+      if (!isCreatingNew) {
+        router.push('/dashboard');
+      }
+    }
+  }, [user, router]);
 
   // Only save to localStorage when explicitly working on a card (not automatic)
 
@@ -387,8 +400,12 @@ export default function Home() {
       localStorage.removeItem('cardStyle');
       localStorage.removeItem('currentStep');
       localStorage.removeItem('savedCardId');
+      localStorage.removeItem('creating_new_card');
       
       alert(savedCardId ? 'Card updated successfully!' : 'Card saved successfully!');
+      
+      // Redirect to dashboard after successful save
+      router.push('/dashboard');
     } catch (error) {
       console.error('Save error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -517,7 +534,16 @@ export default function Home() {
                       <button
                         onClick={() => {
                           setUserMenuOpen(false);
-                          window.location.href = '/profile';
+                          router.push('/dashboard');
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded transition-colors"
+                      >
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          router.push('/profile');
                         }}
                         className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 rounded transition-colors"
                       >
