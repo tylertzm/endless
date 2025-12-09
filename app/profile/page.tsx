@@ -59,7 +59,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
   }, [menuOpen]);
 
   return (
-    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10 relative group cursor-pointer" onClick={onView}>
+    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden relative group cursor-pointer" onClick={onView}>
       {/* Miniature kosma-style card front */}
       <div className="w-full h-full flex items-center justify-center" style={{
         background: 'linear-gradient(135deg, #050505 0%, #1F1F1F 50%, #888888 100%)',
