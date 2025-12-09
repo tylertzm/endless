@@ -8,6 +8,13 @@ import Image from 'next/image';
 import AppHeader from '../components/AppHeader';
 const FluidBackground = dynamic(() => import('../FluidBackground'), { ssr: false });
 
+let qrCodePromise: Promise<typeof import('qrcode')> | null = null;
+
+const loadQRCode = () => {
+  if (!qrCodePromise) qrCodePromise = import('qrcode');
+  return qrCodePromise;
+};
+
 interface SocialLink {
   platform: string;
   handle: string;
@@ -56,8 +63,24 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
     };
   }, [menuOpen]);
 
+  const exportQRCode = async () => {
+    try {
+      const QRCode = await loadQRCode();
+      const url = `${window.location.origin}/c/${card.id}`;
+      const canvas = document.createElement('canvas');
+      await QRCode.toCanvas(canvas, url, { width: 256 });
+      const link = document.createElement('a');
+      link.download = `${card.name || 'card'}-qr.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (error) {
+      console.error('Failed to export QR code:', error);
+      alert('Failed to export QR code');
+    }
+  };
+
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden hover:bg-white/15 transition-colors group">
+    <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden hover:bg-white/15 transition-colors group cursor-pointer" onClick={onView}>
       {/* Card Preview */}
       <div className="w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden border-b border-white/10 relative">
         {/* Miniature kosma-style card front */}
@@ -123,6 +146,16 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
                 className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm"
               >
                 View Card
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  exportQRCode();
+                }}
+                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm"
+              >
+                Export QR Code
               </button>
               <button
                 onClick={(e) => {

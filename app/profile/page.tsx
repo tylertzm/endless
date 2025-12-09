@@ -8,6 +8,13 @@ import Image from 'next/image';
 import AppHeader from '../components/AppHeader';
 const FluidBackground = dynamic(() => import('../FluidBackground'), { ssr: false });
 
+let qrCodePromise: Promise<typeof import('qrcode')> | null = null;
+
+const loadQRCode = () => {
+  if (!qrCodePromise) qrCodePromise = import('qrcode');
+  return qrCodePromise;
+};
+
 interface SocialLink {
   platform: string;
   handle: string;
@@ -58,8 +65,24 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
     };
   }, [menuOpen]);
 
+  const exportQRCode = async () => {
+    try {
+      const QRCode = await loadQRCode();
+      const url = `${window.location.origin}/c/${card.id}`;
+      const canvas = document.createElement('canvas');
+      await QRCode.toCanvas(canvas, url, { width: 256 });
+      const link = document.createElement('a');
+      link.download = `${card.name || 'card'}-qr.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (error) {
+      console.error('Failed to export QR code:', error);
+      alert('Failed to export QR code');
+    }
+  };
+
   return (
-    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10 relative group">
+    <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10 relative group cursor-pointer" onClick={onView}>
       {/* Miniature kosma-style card front */}
       <div className="w-full h-full flex flex-col p-2" style={{
         background: 'linear-gradient(135deg, #050505 0%, #1F1F1F 50%, #888888 100%)',
@@ -123,6 +146,16 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
               className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
             >
               View
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                exportQRCode();
+              }}
+              className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+            >
+              Export QR
             </button>
             {onEdit && (
               <button

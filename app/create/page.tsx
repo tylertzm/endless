@@ -396,8 +396,14 @@ export default function CreatePage() {
       
       alert(savedCardId ? 'Card updated successfully!' : 'Card saved successfully!');
       
-      // Redirect to dashboard after successful save
-      router.push('/dashboard');
+      // Redirect after successful save
+      if (savedCardId) {
+        // Updated existing card, redirect to view it
+        router.push(`/c/${savedCardId}`);
+      } else {
+        // New card, redirect to dashboard
+        router.push('/dashboard');
+      }
     } catch (error) {
       console.error('Save error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
