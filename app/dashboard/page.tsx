@@ -236,7 +236,7 @@ export default function DashboardPage() {
         <AppHeader />
       </div>
       
-      <div className="relative z-10 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-0 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
@@ -254,12 +254,12 @@ export default function DashboardPage() {
               >
                 + 💳
               </button>
-<p className="text-xs md:text-sm flex items-center gap-2">
-  <span className="text-white/60">Cards</span>
-  <span className="px-2 py-0.5 rounded-full bg-orange-600/30 text-white-300 font-semibold">
-    {cards.length}/2
-  </span>
-</p>
+              <p className="text-xs md:text-sm flex items-center gap-2">
+                <span className="text-white/60">Cards</span>
+                <span className="px-2 py-0.5 rounded-full bg-orange-600/30 text-white-300 font-semibold">
+                  {cards.length}/2
+                </span>
+              </p>
               </div>
           </div>
 

@@ -60,12 +60,40 @@ export default function AppHeader() {
         )}
 
         {user && menuOpen && (
-          <div className="app-header__menu" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="app-header__menu" 
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
             <div className="app-header__menu-name">{user.displayName || "User"}</div>
-            <button className="menu-item" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); router.push("/dashboard"); }}>Dashboard</button>
-            <button className="menu-item" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); localStorage.removeItem('cardData'); localStorage.removeItem('cardStyle'); localStorage.removeItem('currentStep'); localStorage.removeItem('savedCardId'); localStorage.removeItem('creating_new_card'); router.push("/create"); }}>Create</button>
-            <button className="menu-item" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); router.push("/profile"); }}>Profile</button>
-            <button className="menu-item" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); user.signOut(); }}>Sign Out</button>
+            <button 
+              className="menu-item" 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/dashboard"); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/dashboard"); }}
+            >
+              Dashboard
+            </button>
+            <button 
+              className="menu-item" 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); localStorage.removeItem('cardData'); localStorage.removeItem('cardStyle'); localStorage.removeItem('currentStep'); localStorage.removeItem('savedCardId'); localStorage.removeItem('creating_new_card'); router.push("/create"); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); localStorage.removeItem('cardData'); localStorage.removeItem('cardStyle'); localStorage.removeItem('currentStep'); localStorage.removeItem('savedCardId'); localStorage.removeItem('creating_new_card'); router.push("/create"); }}
+            >
+              Create
+            </button>
+            <button 
+              className="menu-item" 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/profile"); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/profile"); }}
+            >
+              Profile
+            </button>
+            <button 
+              className="menu-item" 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); user.signOut(); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); user.signOut(); }}
+            >
+              Sign Out
+            </button>
           </div>
         )}
       </div>
