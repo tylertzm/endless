@@ -335,7 +335,9 @@ export default function CreatePage() {
     setSaving(true);
     try {
       // Save to localStorage as backup before database operation
-      localStorage.setItem('cardData', JSON.stringify(cardData));
+      const backupData = { ...cardData };
+      delete backupData.imageData;
+      localStorage.setItem('cardData', JSON.stringify(backupData));
       localStorage.setItem('cardStyle', JSON.stringify(cardStyle));
       localStorage.setItem('currentStep', currentStep.toString());
       if (savedCardId) {

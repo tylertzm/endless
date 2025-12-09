@@ -59,7 +59,7 @@ export default function AppHeader() {
           <div className="app-header__menu">
             <div className="app-header__menu-name">{user.displayName || "User"}</div>
             <button className="menu-item" onClick={() => { setMenuOpen(false); router.push("/dashboard"); }}>Dashboard</button>
-            <button className="menu-item" onClick={() => { setMenuOpen(false); router.push("/create"); }}>Create</button>
+            <button className="menu-item" onClick={() => { setMenuOpen(false); localStorage.removeItem('cardData'); localStorage.removeItem('cardStyle'); localStorage.removeItem('currentStep'); localStorage.removeItem('savedCardId'); localStorage.removeItem('creating_new_card'); router.push("/create"); }}>Create</button>
             <button className="menu-item" onClick={() => { setMenuOpen(false); router.push("/profile"); }}>Profile</button>
             <button className="menu-item" onClick={() => { setMenuOpen(false); user.signOut(); }}>Sign Out</button>
           </div>

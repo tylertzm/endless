@@ -219,7 +219,7 @@ function CardContent() {
           height: 100%;
           position: relative;
           transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           border-radius: 0;
           box-shadow: 0 30px 60px -15px rgba(0,0,0,0.15);
         }

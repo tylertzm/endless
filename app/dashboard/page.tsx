@@ -239,13 +239,7 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-white mb-2">My Cards</h1>
               <p className="text-white/70">Manage your business cards</p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => router.push('/profile')}
-                className="btn btn-ghost"
-              >
-                Profile
-              </button>
+            <div>
               <button
                 onClick={() => {
                   // Mark that user is creating a new card
