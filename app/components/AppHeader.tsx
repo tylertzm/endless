@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@stackframe/stack";
 import { useState, useRef, useEffect } from "react";
@@ -32,13 +31,10 @@ export default function AppHeader() {
       <div className="app-header__left" onClick={() => router.push(user ? "/dashboard" : "/")}>
         <div className="app-header__brand" aria-label="Endless home">
           <div className="app-header__logo">
-            <Image
+            <img
               src="/endless.webp"
               alt="Endless"
-              width={32}
-              height={32}
               className="w-8 h-8 object-contain"
-              priority
             />
           </div>
         </div>
