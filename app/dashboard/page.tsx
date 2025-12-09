@@ -242,7 +242,7 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center mb-8">
             <div>
             </div>
-            <div>
+            <div className="flex flex-col items-end gap-1">
               <button
                 onClick={() => {
                   // Mark that user is creating a new card
@@ -254,19 +254,16 @@ export default function DashboardPage() {
               >
                 + 💳
               </button>
-            </div>
+                <p className="text-xs md:text-sm text-purple-300 drop-shadow-[0_0_4px_rgba(168,85,247,0.6)] font-medium tracking-wide">
+                  Cards: <span className="text-white font-semibold">{cards.length}</span>/2
+                </p>
+              </div>
           </div>
 
           {/* Cards Grid */}
           {cards.length === 0 ? (
             <div className="text-center py-20">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 max-w-md mx-auto">
-                <div className="mb-4">
-                  <div className="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-500/30 rounded-full px-4 py-2">
-                    <span className="text-sm font-medium text-orange-300">Cards Used</span>
-                    <span className="text-lg font-bold text-white">{cards.length}/2</span>
-                  </div>
-                </div>
                 <h2 className="text-2xl font-bold text-white mb-4">No cards yet</h2>
                 <p className="text-white/70 mb-6">Create your first business card to get started</p>
                 <button
@@ -282,22 +279,17 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <>
-              <div className="text-center mb-4">
-                <p className="text-white/70">Cards: {cards.length}/2</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {cards.map((card) => (
-                  <CardThumbnail
-                    key={card.id}
-                    card={card}
-                    onView={() => router.push(`/c/${card.id}`)}
-                    onEdit={() => handleEditCard(card)}
-                    onDelete={() => handleDeleteCard(card.id)}
-                  />
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {cards.map((card) => (
+                <CardThumbnail
+                  key={card.id}
+                  card={card}
+                  onView={() => router.push(`/c/${card.id}`)}
+                  onEdit={() => handleEditCard(card)}
+                  onDelete={() => handleDeleteCard(card.id)}
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>

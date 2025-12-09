@@ -58,7 +58,7 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
   useEffect(() => {
     const fetchCard = async () => {
       try {
-        const response = await fetch(`/api/cards/${id}`);
+        const response = await fetch(`/api/cards/${id}`, { cache: 'no-cache' });
         if (!response.ok) {
           throw new Error('Card not found');
         }
@@ -208,7 +208,7 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
     if (data.imageData) {
       // Extract base64 data from data URL (remove "data:image/jpeg;base64," prefix)
       const base64Data = data.imageData.split(',')[1];
-      vCardData += `PHOTO;ENCODING=b;TYPE=JPEG:${base64Data}\n`;
+      vCardData += `PHOTO;ENCODING=BASE64;TYPE=JPEG:${base64Data}\n`;
     }
     
     if (data.socials) {
