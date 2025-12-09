@@ -8,6 +8,7 @@ export default function AppHeader() {
   const user = useUser();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cardCount, setCardCount] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +28,23 @@ export default function AppHeader() {
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadCardCount = async () => {
+      try {
+        const response = await fetch('/api/cards');
+        if (!response.ok) return;
+        const cards = await response.json();
+        setCardCount(cards.length);
+      } catch (error) {
+        console.error('Failed to load card count:', error);
+      }
+    };
+
+    loadCardCount();
+  }, [user]);
 
   const avatarLetter = user?.displayName?.charAt(0).toUpperCase() || "U";
 
@@ -66,6 +84,15 @@ export default function AppHeader() {
             onTouchStart={(e) => e.stopPropagation()}
           >
             <div className="app-header__menu-name">{user.displayName || "User"}</div>
+            
+            {/* Quota Pill */}
+            <div className="px-3 py-2 mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full text-xs font-medium">
+                <span>Cards:</span>
+                <span className="font-bold">{cardCount !== null ? cardCount : '...'}/2</span>
+              </div>
+            </div>
+
             <button 
               className="menu-item" 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/dashboard"); }}

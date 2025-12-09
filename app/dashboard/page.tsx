@@ -100,44 +100,80 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
 
           {/* Dropdown menu */}
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-black/90 backdrop-blur-md rounded-lg shadow-xl border border-white/20 overflow-hidden z-10">
+            <div 
+              className="absolute right-0 mt-2 w-40 bg-black backdrop-blur-md rounded-lg shadow-xl border border-white/20 overflow-hidden z-[9999]"
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   onView();
                 }}
-                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onView();
+                }}
+                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 View Card
               </button>
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   window.open(`/c/${card.id}?export=png`, '_blank');
                 }}
-                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  window.open(`/c/${card.id}?export=png`, '_blank');
+                }}
+                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 Export Card
               </button>
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   onEdit();
                 }}
-                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onEdit();
+                }}
+                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 Edit
               </button>
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   onDelete();
                 }}
-                className="w-full px-4 py-2 text-left text-red-400 hover:bg-white/10 transition-colors text-sm"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onDelete();
+                }}
+                className="w-full px-4 py-2 text-left text-red-400 hover:bg-white/10 transition-colors text-sm cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 Delete
               </button>
