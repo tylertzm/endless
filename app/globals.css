@@ -82,6 +82,14 @@ body {
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 20px rgba(255, 122, 26, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-circle:hover {
+  background: linear-gradient(135deg, var(--brand-strong), var(--brand));
+  box-shadow: 0 12px 30px rgba(255, 122, 26, 0.6);
+  transform: translateY(-2px);
 }
 
 .btn:disabled, .btn[disabled] {
@@ -95,11 +103,11 @@ body {
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
+  padding: 8px 24px;
   background: radial-gradient(circle at 20% 20%, rgba(255,122,26,0.12), transparent 38%),
               radial-gradient(circle at 80% 0%, rgba(255,255,255,0.08), transparent 32%),
               rgba(0,0,0,0.65);
@@ -116,13 +124,13 @@ body {
 }
 
 .app-header__logo {
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 70px;
 }
 
 .app-header__right {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   position: relative;
 }
@@ -132,8 +140,8 @@ body {
   right: 0;
   top: calc(100% + 10px);
   /* Solid, non-transparent background for reliable visibility */
-  background: rgba(0,0,0,1.0);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: rgb(0, 0, 0);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 12px;
   padding: 10px;
   min-width: 180px;

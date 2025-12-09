@@ -32,9 +32,22 @@ export async function GET(
     // Parse socials JSON if it exists
     let socials = [];
     try {
-      socials = card.socials ? JSON.parse(card.socials) : [];
+      if (card.socials) {
+        // Handle case where socials is already an object or is a JSON string
+        if (typeof card.socials === 'string') {
+          // If it's the invalid "[object Object]" string, default to empty array
+          if (card.socials === '[object Object]') {
+            socials = [];
+          } else {
+            socials = JSON.parse(card.socials);
+          }
+        } else {
+          // If it's already an object, use it directly
+          socials = Array.isArray(card.socials) ? card.socials : [];
+        }
+      }
     } catch (e) {
-      console.error('Failed to parse socials:', e);
+      console.error('Failed to parse socials:', e, 'Raw value:', card.socials);
       socials = [];
     }
 
@@ -119,6 +132,9 @@ export async function PUT(
     const body = await request.json();
     const { name, title, company, phone, email, website, address, socials, style, imageData } = body;
 
+    // Debug logging for socials
+    console.log('Received socials:', socials, 'Type:', typeof socials, 'Is array:', Array.isArray(socials));
+
     // Verify the card belongs to the user
     const userResult = await sql`
       SELECT id FROM users WHERE stack_auth_id = ${user.id}
@@ -139,6 +155,7 @@ export async function PUT(
     }
 
     // Update the card
+    const socialsToStore = Array.isArray(socials) ? socials : [];
     await sql`
       UPDATE cards SET
         name = ${name},
@@ -148,7 +165,7 @@ export async function PUT(
         email = ${email || null},
         website = ${website || null},
         address = ${address || null},
-        socials = ${JSON.stringify(socials || [])},
+        socials = ${JSON.stringify(socialsToStore)},
         image_data = ${imageData || null},
         style = ${style || 'kosma'},
         updated_at = NOW()

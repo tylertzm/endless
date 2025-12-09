@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
     console.log('API: Request body:', body);
 
     const { name, title, company, phone, email, website, address, socials, style } = body;
+    
+    // Debug logging for socials
+    console.log('POST: Received socials:', socials, 'Type:', typeof socials, 'Is array:', Array.isArray(socials));
 
     // Generate IDs for user and card
     const userId = createId();
@@ -59,12 +62,13 @@ export async function POST(request: NextRequest) {
     const imageData = body.imageData || null;
     console.log('API: Inserting card with data:', { name, title, company, phone, email, website, address, socials, imageData, style });
 
+    const socialsToStore = Array.isArray(socials) ? socials : [];
     const result = await sql`
       INSERT INTO cards (id, user_id, name, title, company, phone, email, website, address, socials, image_data, style, created_at, updated_at)
       VALUES (
         ${cardId},
         ${finalUserId},
-        ${name}, ${title || null}, ${company || null}, ${phone || null}, ${email || null}, ${website || null}, ${address || null}, ${JSON.stringify(socials || [])}, ${imageData}, ${style || 'kosma'}, ${now}, ${now}
+        ${name}, ${title || null}, ${company || null}, ${phone || null}, ${email || null}, ${website || null}, ${address || null}, ${JSON.stringify(socialsToStore)}, ${imageData}, ${style || 'kosma'}, ${now}, ${now}
       )
       RETURNING id
     `;

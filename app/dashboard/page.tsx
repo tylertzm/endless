@@ -5,8 +5,8 @@ import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import AppHeader from '../components/AppHeader';
+const CardPreview3D = dynamic(() => import('../components/CardPreview3D'), { ssr: false });
 const FluidBackground = dynamic(() => import('../FluidBackground'), { ssr: false });
 
 interface SocialLink {
@@ -60,27 +60,17 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
   return (
     <div className="rounded-xl overflow-hidden group cursor-pointer" onClick={onView}>
       {/* Card Preview */}
-      <div className="w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden relative">
-        {/* Miniature kosma-style card front */}
-        <div className="w-full h-full flex items-center justify-center" style={{
-          background: 'linear-gradient(135deg, #050505 0%, #1F1F1F 50%, #888888 100%)',
-          position: 'relative'
-        }}>
-          {/* Profile image/initial in center */}
-          {card.image_data || card.imageData ? (
-            <Image
-              src={card.image_data || card.imageData!}
-              alt="Profile"
-              width={64}
-              height={64}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-          ) : (
-            <span className="text-xl font-bold text-white">
-              {card.name ? card.name.charAt(0).toUpperCase() : "K"}
-            </span>
-          )}
-        </div>
+      <div className="w-full h-40 sm:h-44 md:h-48 bg-black overflow-hidden relative">
+        <CardPreview3D compact cardData={{
+          name: card.name,
+          title: card.title,
+          company: card.company,
+          phone: card.phone,
+          email: card.email,
+          website: card.website,
+          address: card.address,
+          imageData: card.image_data || card.imageData
+        }} />
 
         {/* Three dots menu button */}
         <div className="absolute top-2 right-2" ref={menuRef}>

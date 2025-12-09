@@ -1,10 +1,11 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, Suspense, useState, useRef, useCallback } from 'react';
+import { useEffect, Suspense, useState, useRef, useCallback, use as useReact } from 'react';
 import Head from 'next/head';
 import { useParams } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
+import dynamic from 'next/dynamic';
 
 let html2canvasPromise: Promise<typeof import('html2canvas')> | null = null;
 let qrCodePromise: Promise<typeof import('qrcode')> | null = null;
@@ -19,21 +20,30 @@ const loadQRCode = () => {
   return qrCodePromise;
 };
 
+// Dynamic import for 3D card component (client-side only)
+const CardPreview3D = dynamic(() => import('../../components/CardPreview3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-64 bg-black/20 rounded-lg flex items-center justify-center">
+      <div className="text-white/50">Loading 3D card...</div>
+    </div>
+  )
+});
+
 interface SocialLink {
   platform: string;
   handle: string;
-  label: string;
 }
 
 interface CardData {
-  name: string;
-  title: string;
-  company: string;
-  phone: string;
-  email: string;
-  website: string;
-  address: string;
-  socials: SocialLink[];
+  name?: string;
+  title?: string;
+  company?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  address?: string;
+  socials?: SocialLink[];
   imageData?: string;
   style?: 'kosma';
 }
@@ -77,14 +87,6 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
     }
   }, [id]);
 
-  const [flipped, setFlipped] = useState(false);
-  const [zoomed, setZoomed] = useState(false);
-  const [panX, setPanX] = useState(0);
-  const [panY, setPanY] = useState(0);
-
-  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const clickCountRef = useRef(0);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const autoExportTriggeredRef = useRef(false);
 
   useEffect(() => {
@@ -93,13 +95,20 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
         const history: HistoryItem[] = JSON.parse(localStorage.getItem('card_history') || '[]');
         const newEntry: HistoryItem = {
           id: params.id as string,
-          data: data,
+          data: {
+            // Only store essential display fields, not large data like images
+            name: data.name,
+            title: data.title,
+            company: data.company,
+          } as CardData,
           timestamp: new Date().toISOString(),
         };
         
         const exists = history.find((h) => h.id === params.id);
         if (!exists) {
-          localStorage.setItem('card_history', JSON.stringify([newEntry, ...history]));
+          // Limit history to 50 entries to prevent quota issues
+          const newHistory = [newEntry, ...history].slice(0, 50);
+          localStorage.setItem('card_history', JSON.stringify(newHistory));
         }
       } catch (e) {
         console.error('Failed to save history', e);
@@ -189,7 +198,7 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
   }, [autoExport, data, exportAsPNG]);
 
   const saveContact = () => {
-    if (!data) return;
+    if (!data || !data.name) return;
     const nameParts = data.name.trim().split(' ');
     const firstName = nameParts.slice(0, -1).join(' ') || nameParts[0];
     const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
@@ -527,204 +536,90 @@ function CardContent({ autoExport }: { autoExport: boolean }) {
         }
       `}</style>
 
-      <div className="mb-12">
-         <a href={process.env.NEXT_PUBLIC_BASE_URL || "https://endlessproduction.vercel.app"} target="_blank" rel="noopener noreferrer">
-           <img src="/endless.webp?v=2" alt="Endless Logo" className="w-32 h-auto cursor-pointer hover:opacity-80 transition-opacity" />
-         </a>
-      </div>
-
-      <div className="relative group cursor-pointer" onClick={saveContact}>
-        <div className="absolute -inset-4 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div 
-          className={`kosma-card-wrapper prompt-animation`} 
-          onClick={(e) => {
-            e.stopPropagation();
-            clickCountRef.current++;
-            if (clickCountRef.current === 1) {
-              clickTimerRef.current = setTimeout(() => {
-                setFlipped(!flipped);
-                clickCountRef.current = 0;
-              }, 300);
-            } else if (clickCountRef.current === 2) {
-              if (clickTimerRef.current) {
-                clearTimeout(clickTimerRef.current);
-              }
-              setZoomed(!zoomed);
-              setPanX(0);
-              setPanY(0);
-              clickCountRef.current = 0;
-            }
-          }}
-          onTouchStart={(e) => {
-            if (zoomed) {
-              const touch = e.touches[0];
-              touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-            }
-          }}
-          onTouchMove={(e) => {
-            if (zoomed && touchStartRef.current) {
-              e.preventDefault();
-              const touch = e.touches[0];
-              const deltaX = touch.clientX - touchStartRef.current.x;
-              const deltaY = touch.clientY - touchStartRef.current.y;
-              setPanX(panX + deltaX / 2);
-              setPanY(panY + deltaY / 2);
-              touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-            }
-          }}
-          onMouseDown={(e) => {
-            if (zoomed) {
-              touchStartRef.current = { x: e.clientX, y: e.clientY };
-            }
-          }}
-          onMouseMove={(e) => {
-            if (zoomed && touchStartRef.current) {
-              e.preventDefault();
-              const deltaX = e.clientX - touchStartRef.current.x;
-              const deltaY = e.clientY - touchStartRef.current.y;
-              setPanX(panX + deltaX / 2);
-              setPanY(panY + deltaY / 2);
-              touchStartRef.current = { x: e.clientX, y: e.clientY };
-            }
-          }}
-          onMouseUp={() => {
-            touchStartRef.current = null;
-          }}
-          onTouchEnd={() => {
-            touchStartRef.current = null;
-          }}
-        >
-          <div 
-            className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}
-            style={zoomed ? { 
-              transform: `scale(1.5) ${flipped ? 'rotateY(180deg)' : ''} translate(${panX}px, ${panY}px)` 
-            } : undefined}
-          >
-            <div className="kosma-card-face kosma-front">
-              <div className="kosma-front-content">
-                {data.company && (
-                  <div className="kosma-brand-header">
-                    {data.company}<br />
-                  </div>
-                )}
-                <div className="kosma-topo-symbol-container">
-                  {data.imageData ? (
-                    <img 
-                      src={data.imageData} 
-                      alt="Profile" 
-                      className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
-                    />
-                  ) : (
-                    <div className="kosma-topo-k">{data.name ? data.name.charAt(0).toUpperCase() : "K"}</div>
-                  )}
-                </div>
-                <div className="kosma-logo-text-bottom">
-                  {data.name && <span>{data.name}</span>}
-                </div>
-              </div>
-            </div>
-            <div className="kosma-card-face kosma-back">
-              <div className="kosma-back-content">
-                {data.title && (
-                  <div className="kosma-headline-large">
-                    {data.title}
-                  </div>
-                )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(8px, 2vw, 16px)', fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF' }}>
-                  <div style={{ textAlign: 'justify' }}>
-                    {data.phone && <p><strong>Phone:</strong> {data.phone}</p>}
-                    {data.email && <p><strong>Email:</strong> {data.email}</p>}
-                    {data.website && <p><strong>Website:</strong> {data.website}</p>}
-                    {data.address && <p><strong>Address:</strong> {data.address}</p>}
-                  </div>
-                  <div style={{ textAlign: 'justify' }}>
-                    {data.socials.length > 0 && (
-                      <div>
-                        <p><strong>Social Links:</strong></p>
-                        {data.socials.map((social, i) => (
-                          <p key={i}>{social.platform}: {social.handle}</p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="kosma-info-grid">
-                  <div className="kosma-palette-pill">
-                    <div className="kosma-swatch kosma-s1"></div>
-                    <div className="kosma-swatch kosma-s2"></div>
-                    <div className="kosma-swatch kosma-s3"></div>
-                    <div className="kosma-swatch kosma-s4"></div>
-                  </div>
-                  <div className="kosma-contact-details">
-                    {data.name && <strong>{data.name}</strong>}
-                    {data.company && <div>{data.company}</div>}
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Full screen 3D card */}
+      <div className="fixed inset-0 z-10">
+        {data ? (
+          <CardPreview3D cardData={data} fullscreen={true} />
+        ) : (
+          <div className="w-full h-full bg-black/20 flex items-center justify-center">
+            <div className="text-white/50">Loading card...</div>
           </div>
-        </div>
-      </div>
-
-      <div className="mt-4 text-center text-white/70 text-sm">
-        Tap to flip • Double-tap to zoom
-      </div>
-
-      <div className="mt-8 flex gap-4">
-        <button 
-          onClick={saveContact}
-          className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Save Contact
-        </button>
-
-        {user && (
-          <button 
-            onClick={handleSaveToProfile}
-            disabled={saving || isSaved}
-            className={`px-8 py-3 font-bold rounded-full transition-colors flex items-center gap-2 ${
-              isSaved 
-                ? 'bg-green-600 text-white cursor-not-allowed' 
-                : 'bg-black border-2 border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black'
-            }`}
-          >
-            {saving ? 'Saving...' : isSaved ? 'Saved!' : 'Save to Profile'}
-          </button>
         )}
       </div>
 
-      <div className="mt-4 flex justify-center">
-        <button 
-          onClick={exportAsPNG}
-          className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7,10 12,15 17,10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Export as PNG
-        </button>
+      {/* Impressum below 3D render */}
+      {/* Floating buttons at bottom */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col sm:flex-row gap-2 sm:gap-4 max-w-full px-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <button 
+            onClick={saveContact}
+            className="px-4 sm:px-8 py-2 sm:py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+          >
+            <svg width="16" height="16" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span className="hidden xs:inline">Save Contact</span>
+            <span className="xs:hidden">Save</span>
+          </button>
+
+          {user && (
+            <button 
+              onClick={handleSaveToProfile}
+              disabled={saving || isSaved}
+              className={`px-4 sm:px-8 py-2 sm:py-3 font-bold rounded-full transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base ${
+                isSaved 
+                  ? 'bg-green-600 text-white cursor-not-allowed' 
+                  : 'bg-black border-2 border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black'
+              }`}
+            >
+              {saving ? 'Saving...' : isSaved ? 'Saved!' : 'Save to Profile'}
+            </button>
+          )}
+
+          <button 
+            onClick={exportAsPNG}
+            className="px-4 sm:px-8 py-2 sm:py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+          >
+            <svg width="16" height="16" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7,10 12,15 17,10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span className="hidden sm:inline">Export as PNG</span>
+            <span className="sm:hidden">Export</span>
+          </button>
+        </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-8 mb-4 text-white/50 py-2 text-center text-xs">
+      {/* Impressum below floating buttons */}
+      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 z-20 text-white/50 text-center text-xs">
         <a href="/impressum" className="hover:text-white/80 transition-colors">
           Impressum
         </a>
-      </footer>
+      </div>
+
+      {/* Instructions overlay - responsive */}
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-20 text-center text-white/70 text-xs sm:text-sm bg-black/50 backdrop-blur-sm rounded-full px-3 sm:px-6 py-1 sm:py-2 max-w-[90vw] sm:max-w-none">
+        <span className="hidden sm:inline">Click and drag to rotate • Double-click to flip • Scroll to zoom</span>
+        <span className="sm:hidden">Drag to rotate • Tap to flip • Pinch to zoom</span>
+      </div>
+
+      {/* Endless logo below hints */}
+      <div className="fixed top-12 sm:top-14 left-1/2 transform -translate-x-1/2 z-20">
+        <a href={process.env.NEXT_PUBLIC_BASE_URL || "https://endlessproduction.vercel.app"} target="_blank" rel="noopener noreferrer">
+          <img src="/endless.webp?v=2" alt="Endless Logo" className="w-20 sm:w-24 h-auto cursor-pointer hover:opacity-80 transition-opacity" />
+        </a>
+      </div>
     </div>
     </>
   );
 }
 
-export default function CardViewer({ searchParams }: { searchParams: { export?: string } }) {
-  const exportParam = (searchParams?.export || '').toLowerCase();
+export default function CardViewer({ searchParams }: { searchParams: Promise<{ export?: string }> }) {
+  const params = useReact(searchParams);
+  const exportParam = (params?.export || '').toLowerCase();
   const autoExport = exportParam === 'png';
   return (
     <Suspense

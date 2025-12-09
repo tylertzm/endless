@@ -369,7 +369,15 @@ export default function CreatePage() {
       }
 
       const requestBody = {
-        ...cardData,
+        name: cardData.name,
+        title: cardData.title,
+        company: cardData.company,
+        phone: cardData.phone,
+        email: cardData.email,
+        website: cardData.website,
+        address: cardData.address,
+        socials: cardData.socials,
+        image_data: cardData.imageData || undefined,
         style: cardStyle,
       };
       console.log('Request body:', requestBody);
@@ -459,6 +467,27 @@ export default function CreatePage() {
   const nextStyle = () => setStyleIndex((i) => (i + 1) % styles.length);
   const prevStyle = () => setStyleIndex((i) => (i - 1 + styles.length) % styles.length);
 
+  // Client-only wrapper for dynamic 3D preview import to avoid SSR issues
+  function ClientCardPreview({ cardData }: { cardData: CardData }) {
+    const [Comp, setComp] = useState<null | React.ComponentType<{ cardData: CardData }>>(null);
+    useEffect(() => {
+      let mounted = true;
+      (async () => {
+        try {
+          const mod = await import('../components/CardPreview3D');
+          if (mounted) setComp(() => mod.default as React.ComponentType<{ cardData: CardData }>);
+        } catch (e) {
+          console.error('Failed to load 3D preview component', e);
+        }
+      })();
+      return () => {
+        mounted = false;
+      };
+    }, []);
+    if (!Comp) return null;
+    return <Comp cardData={cardData} />;
+  }
+
   if (user === undefined) {
     // Avoid showing any loading text; rely on app-level splash/transition
     return null;
@@ -538,53 +567,7 @@ export default function CreatePage() {
       <FluidBackground />
       <AppHeader />
       <div className="h-screen px-4 flex-col pt-4">
-      <style jsx>{`
-        .card-front {
-          background-color: #EAEAE6;
-          color: #111111;
-          padding: 25px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: monospace;
-        }
-
-        .card-wrapper {
-          width: clamp(300px, 80vw, 600px);
-          aspect-ratio: 1.75;
-          position: relative;
-          perspective: 1000px;
-        }
-
-        .card {
-          width: 100%;
-          height: 100%;
-          border-radius: 0;
-          position: relative;
-          box-sizing: border-box;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-          overflow: hidden;
-          transition: transform 0.6s;
-          transform-style: preserve-3d;
-        }
-
-        .card-front {
-          background-color: #EAEAE6;
-          color: #111111;
-          padding: 25px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-family: monospace;
-        }
-
-        .top-label {
-          font-size: clamp(6px, 1.2vw, 10px);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          text-align: right;
-          border-bottom: 1px solid #ccc;
-          padding-bottom: clamp(4px, 1vw, 10px);
+      <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
           margin-bottom: clamp(4px, 1vw, 10px);
           width: 100%;
         }
@@ -1081,8 +1064,7 @@ export default function CreatePage() {
           transform: rotateY(180deg) scale(1.5);
         }
       `}</style>
-
-      <div className="max-w-4xl mx-auto flex flex-col h-full gap-4">
+      <div className="h-screen px-4 flex-col pt-4">
         <div className="flex items-center gap-4" style={{ paddingTop: '8px' }}>
           <div className="flex-1">
             <div className="progress" aria-hidden>
@@ -1285,6 +1267,11 @@ export default function CreatePage() {
                           >
                             {saving ? 'Updating...' : 'Update Card'}
                           </button>
+                          {/* 3D Preview */}
+                          <div className="mt-6 w-full">
+                            {/* 3D Preview (client-only dynamic import) */}
+                            <ClientCardPreview cardData={cardData} />
+                          </div>
                           <button onClick={exportAsVCard} className="btn btn-ghost">Export as Contact</button>
                           <button onClick={exportAsPNG} className="btn btn-ghost">Save QR Code</button>
                           <button onClick={copyCardLink} className="btn btn-ghost">Copy Link</button>
@@ -1305,169 +1292,17 @@ export default function CreatePage() {
 
           {/* Preview below - 40% height */}
           <div className="h-[40vh] flex flex-col justify-center">
-
-              <div className="relative flex justify-center">
-                <div
-                  onTouchStart={(e) => setStartX(e.touches[0].clientX)}
-                  onTouchEnd={(e) => {
-                    if (startX === null) return;
-                    const endX = e.changedTouches[0].clientX;
-                    const diff = startX - endX;
-                    if (Math.abs(diff) > 50) {
-                      if (diff > 0) nextStyle();
-                      else prevStyle();
-                    }
-                    setStartX(null);
-                  }}
-                  onMouseDown={(e) => setStartX(e.clientX)}
-                  onMouseUp={(e) => {
-                    if (startX === null) return;
-                    const endX = e.clientX;
-                    const diff = startX - endX;
-                    if (Math.abs(diff) > 50) {
-                      if (diff > 0) nextStyle();
-                      else prevStyle();
-                    }
-                    setStartX(null);
-                  }}
-                >
-                  <div className="kosma-card-wrapper relative" style={{ transform: 'scale(1)', transformOrigin: 'center' }} onClick={(e) => {
-                    e.stopPropagation();
-                    clickCountRef.current++;
-                    if (clickCountRef.current === 1) {
-                      clickTimerRef.current = setTimeout(() => {
-                        setFlipped(!flipped);
-                        clickCountRef.current = 0;
-                      }, 300);
-                    } else if (clickCountRef.current === 2) {
-                      if (clickTimerRef.current) {
-                        clearTimeout(clickTimerRef.current);
-                      }
-                      setZoomed(!zoomed);
-                      setPanX(0);
-                      setPanY(0);
-                      clickCountRef.current = 0;
-                    }
-                  }}
-                  onTouchStart={(e) => {
-                    if (zoomed) {
-                      const touch = e.touches[0];
-                      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-                    }
-                  }}
-                  onTouchMove={(e) => {
-                    if (zoomed && touchStartRef.current) {
-                      e.preventDefault();
-                      const touch = e.touches[0];
-                      const deltaX = touch.clientX - touchStartRef.current.x;
-                      const deltaY = touch.clientY - touchStartRef.current.y;
-                      setPanX(panX + deltaX / 2);
-                      setPanY(panY + deltaY / 2);
-                      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-                    }
-                  }}
-                  onMouseDown={(e) => {
-                    if (zoomed) {
-                      touchStartRef.current = { x: e.clientX, y: e.clientY };
-                    }
-                  }}
-                  onMouseMove={(e) => {
-                    if (zoomed && touchStartRef.current) {
-                      e.preventDefault();
-                      const deltaX = e.clientX - touchStartRef.current.x;
-                      const deltaY = e.clientY - touchStartRef.current.y;
-                      setPanX(panX + deltaX / 2);
-                      setPanY(panY + deltaY / 2);
-                      touchStartRef.current = { x: e.clientX, y: e.clientY };
-                    }
-                  }}
-                  onMouseUp={() => {
-                    touchStartRef.current = null;
-                  }}
-                  onTouchEnd={() => {
-                    touchStartRef.current = null;
-                  }}
-                  >
-                    <div 
-                      className={`kosma-card ${flipped ? 'flipped' : ''} ${zoomed ? 'zoomed' : ''}`}
-                      style={zoomed ? { 
-                        transform: `scale(1.5) ${flipped ? 'rotateY(180deg)' : ''} translate(${panX}px, ${panY}px)` 
-                      } : undefined}
-                    >
-                      <div className="kosma-card-face kosma-front">
-                        <div className="kosma-front-content">
-                          {cardData.company && (
-                            <div className="kosma-brand-header">
-                              {cardData.company}<br />
-                            </div>
-                          )}
-                          <div className="kosma-topo-symbol-container">
-                            {cardData.imageData ? (
-                              <img 
-                                src={cardData.imageData} 
-                                alt="Profile" 
-                                className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
-                              />
-                            ) : (
-                              <div className="kosma-topo-k">{cardData.name ? cardData.name.charAt(0).toUpperCase() : "K"}</div>
-                            )}
-                          </div>
-                          <div className="kosma-logo-text-bottom">
-                            {cardData.name && <span>{cardData.name}</span>}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="kosma-card-face kosma-back">
-                        <div className="kosma-back-content">
-                          <div className="kosma-headline-large">
-                            {cardData.title || "Your Title"}
-                          </div>
-                          <div style={{ display: 'flex', gap: '20px', flex: 1 }}>
-                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF', textAlign: 'justify' }}>
-                              {cardData.phone && <p><strong>Phone:</strong> {cardData.phone}</p>}
-                              {cardData.email && <p><strong>Email:</strong> {cardData.email}</p>}
-                              {cardData.website && <p><strong>Website:</strong> {cardData.website}</p>}
-                              {cardData.address && <p><strong>Address:</strong> {cardData.address}</p>}
-                            </div>
-                            <div style={{ flex: 1, fontSize: 'clamp(6px, 1.4vw, 12px)', lineHeight: '1.6', color: '#FFFFFF', textAlign: 'justify' }}>
-                              {cardData.socials.length > 0 && (
-                                <div>
-                                  <p><strong>Social Links:</strong></p>
-                                  {cardData.socials.map((social, i) => (
-                                    <p key={i}>{social.platform}: {social.handle}</p>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="kosma-info-grid">
-                            <div className="kosma-palette-pill">
-                              <div className="kosma-swatch kosma-s1"></div>
-                              <div className="kosma-swatch kosma-s2"></div>
-                              <div className="kosma-swatch kosma-s3"></div>
-                              <div className="kosma-swatch kosma-s4"></div>
-                            </div>
-                            <div className="kosma-contact-details">
-                              {cardData.name && <strong>{cardData.name}</strong>}
-                              {cardData.company && <div>{cardData.company}</div>}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ClientCardPreview cardData={cardData} />
           </div>
-          
-          {/* Footer */}
-          <footer className="text-white/50 py-4 text-center text-xs mt-4">
-            <a href="/impressum" className="hover:text-white/80 transition-colors">
-              Impressum
-            </a>
-          </footer>
         </div>
+        
+        {/* Footer */}
+        <footer className="text-white/50 py-4 text-center text-xs mt-4">
+          <a href="/impressum" className="hover:text-white/80 transition-colors">
+            Impressum
+          </a>
+        </footer>
+      </div>
     </>
   );
 }                
