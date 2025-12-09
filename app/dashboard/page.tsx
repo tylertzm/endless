@@ -3,9 +3,10 @@
 import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import FluidBackground from '../FluidBackground';
 import AppHeader from '../components/AppHeader';
+const FluidBackground = dynamic(() => import('../FluidBackground'), { ssr: false });
 
 interface SocialLink {
   platform: string;

@@ -2,13 +2,12 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from 'next/navigation';
-import html2canvas from 'html2canvas';
-import QRCode from 'qrcode';
-import FluidBackground from "../FluidBackground";
 import AppHeader from "../components/AppHeader";
 import { useUser, SignIn, SignUp } from '@stackframe/stack';
 import * as Tooltip from '@radix-ui/react-tooltip';
+const FluidBackground = dynamic(() => import("../FluidBackground"), { ssr: false });
 
 interface SocialLink {
   platform: string;
@@ -42,6 +41,19 @@ const STEP_KEYS = [
 ];
 
 const styles = ["kosma"] as const;
+
+let html2canvasPromise: Promise<typeof import('html2canvas')> | null = null;
+let qrCodePromise: Promise<typeof import('qrcode')> | null = null;
+
+const loadHtml2Canvas = () => {
+  if (!html2canvasPromise) html2canvasPromise = import('html2canvas');
+  return html2canvasPromise;
+};
+
+const loadQRCode = () => {
+  if (!qrCodePromise) qrCodePromise = import('qrcode');
+  return qrCodePromise;
+};
 
 export default function CreatePage() {
   const user = useUser();
@@ -214,6 +226,8 @@ export default function CreatePage() {
 
     console.log('Starting QR code export...');
     try {
+      const [QRCode, html2canvasLib] = await Promise.all([loadQRCode(), loadHtml2Canvas()]);
+      const { default: html2canvas } = html2canvasLib;
       // Generate QR Code for the saved card
       const url = `${window.location.origin}/c/${savedCardId}`;
       console.log('Generating QR code for URL:', url);
@@ -253,7 +267,7 @@ export default function CreatePage() {
       });
 
       // Convert canvas to blob for better mobile compatibility
-      canvas.toBlob((blob) => {
+      canvas.toBlob((blob: Blob | null) => {
         if (blob) {
           const url = URL.createObjectURL(blob);
           

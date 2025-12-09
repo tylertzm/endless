@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useRouter } from 'next/navigation';
-import FluidBackground from "./FluidBackground";
+const FluidBackground = dynamic(() => import("./FluidBackground"), { ssr: false });
 import { useUser, SignIn, SignUp } from '@stackframe/stack';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
