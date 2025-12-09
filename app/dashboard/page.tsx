@@ -242,7 +242,7 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center mb-8">
             <div>
             </div>
-            <div className="flex flex-col items-end gap-1">
+            <div>
               <button
                 onClick={() => {
                   // Mark that user is creating a new card
@@ -254,13 +254,7 @@ export default function DashboardPage() {
               >
                 + 💳
               </button>
-              <p className="text-xs md:text-sm flex items-center gap-2">
-                <span className="text-white/60">Cards</span>
-                <span className="px-2 py-0.5 rounded-full bg-orange-600/30 text-white-300 font-semibold">
-                  {cards.length}/2
-                </span>
-              </p>
-              </div>
+            </div>
           </div>
 
           {/* Cards Grid */}

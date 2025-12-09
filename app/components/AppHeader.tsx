@@ -89,6 +89,13 @@ export default function AppHeader() {
             </button>
             <button 
               className="menu-item" 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/plans"); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); router.push("/plans"); }}
+            >
+              Plans & Usage
+            </button>
+            <button 
+              className="menu-item" 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); user.signOut(); }}
               onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(false); user.signOut(); }}
             >

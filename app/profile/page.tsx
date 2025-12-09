@@ -100,35 +100,63 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
 
         {/* Dropdown menu */}
         {menuOpen && (
-          <div className="absolute right-0 mt-1 w-32 bg-black/90 backdrop-blur-md rounded-lg shadow-xl border border-white/20 overflow-hidden z-10">
+          <div 
+            className="absolute right-0 mt-1 w-32 bg-black backdrop-blur-md rounded-lg shadow-xl border border-white/20 overflow-hidden z-[9999]"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
             <button
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 setMenuOpen(false);
                 onView();
               }}
-              className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setMenuOpen(false);
+                onView();
+              }}
+              className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs cursor-pointer"
+              style={{ touchAction: 'manipulation' }}
             >
               View
             </button>
             <button
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 setMenuOpen(false);
                 window.open(`/c/${card.id}?export=png`, '_blank');
               }}
-              className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setMenuOpen(false);
+                window.open(`/c/${card.id}?export=png`, '_blank');
+              }}
+              className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs cursor-pointer"
+              style={{ touchAction: 'manipulation' }}
             >
               Export Card
             </button>
             {onEdit && (
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   onEdit();
                 }}
-                className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onEdit();
+                }}
+                className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 Edit
               </button>
@@ -136,22 +164,38 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
             {showUnsave && onUnsave ? (
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   onUnsave();
                 }}
-                className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onUnsave();
+                }}
+                className="w-full px-3 py-2 text-left text-white hover:bg-white/10 transition-colors text-xs cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 Unsave
               </button>
             ) : onDelete ? (
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   setMenuOpen(false);
                   onDelete();
                 }}
-                className="w-full px-3 py-2 text-left text-red-400 hover:bg-white/10 transition-colors text-xs"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onDelete();
+                }}
+                className="w-full px-3 py-2 text-left text-red-400 hover:bg-white/10 transition-colors text-xs cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
               >
                 Delete
               </button>
@@ -285,7 +329,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
         <AppHeader />
       </div>
       
-      <div className="relative z-10 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-0 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
 
           {/* Profile Section */}
