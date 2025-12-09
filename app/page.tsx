@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from 'next/navigation';
 const FluidBackground = dynamic(() => import("./FluidBackground"), { ssr: false });
@@ -41,7 +40,7 @@ export default function Home() {
         <Tooltip.TooltipProvider>
           <div className="bg-black/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl max-w-md w-full border border-white/10">
             <div className="text-center mb-6">
-              <Image src="/endless.webp" alt="Endless Logo" width={64} height={64} className="w-16 h-16 mx-auto mb-4" />
+              <img src="/endless.webp" alt="Endless Logo" className="w-16 h-16 mx-auto mb-4 object-contain" />
               <h1 className="text-3xl font-bold text-white mb-2">Welcome to Endless</h1>
               <p className="text-gray-300">Create and share your digital business cards</p>
             </div>
@@ -94,12 +93,6 @@ export default function Home() {
                 `}</style>
                 {isSignUp ? <SignUp /> : <SignIn />}
               </div>
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="w-full py-2 bg-white/10 text-white rounded-lg border border-white/10 hover:bg-white/20 transition-colors"
-              >
-                Continue as guest (dashboard)
-              </button>
             </div>
           </div>
         </Tooltip.TooltipProvider>

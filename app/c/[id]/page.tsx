@@ -1,10 +1,23 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, Suspense, useState, useRef } from 'react';
+import { useEffect, useMemo, Suspense, useState, useRef, useCallback } from 'react';
 import Head from 'next/head';
 import { useSearchParams, useParams } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
+
+let html2canvasPromise: Promise<typeof import('html2canvas')> | null = null;
+let qrCodePromise: Promise<typeof import('qrcode')> | null = null;
+
+const loadHtml2Canvas = () => {
+  if (!html2canvasPromise) html2canvasPromise = import('html2canvas');
+  return html2canvasPromise;
+};
+
+const loadQRCode = () => {
+  if (!qrCodePromise) qrCodePromise = import('qrcode');
+  return qrCodePromise;
+};
 
 interface SocialLink {
   platform: string;
@@ -33,6 +46,7 @@ interface HistoryItem {
 
 function CardContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id as string;
   const user = useUser();
 
@@ -64,6 +78,14 @@ function CardContent() {
     }
   }, [id]);
 
+  // Auto export if param
+  useEffect(() => {
+    const exportParam = searchParams.get('export');
+    if (exportParam === 'png' && data) {
+      exportAsPNG();
+    }
+  }, [data, searchParams, exportAsPNG]);
+
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [panX, setPanX] = useState(0);
@@ -94,6 +116,76 @@ function CardContent() {
   }, [data, params.id]);
 
   if (!data) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+
+  const exportAsPNG = useCallback(async () => {
+    if (!data) return;
+
+    console.log('Starting QR code export...');
+    try {
+      const [QRCode, html2canvasLib] = await Promise.all([loadQRCode(), loadHtml2Canvas()]);
+      const { default: html2canvas } = html2canvasLib;
+      // Generate QR Code for the card
+      const url = `${window.location.origin}/c/${id}`;
+      console.log('Generating QR code for URL:', url);
+      const qrDataUrl = await QRCode.toDataURL(url, { width: 400, margin: 1, errorCorrectionLevel: 'M' });
+      console.log('QR code generated successfully');
+
+      // Create a temporary div for the QR code image
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '400px';
+      tempDiv.style.height = '600px';
+      tempDiv.style.background = 'linear-gradient(135deg, #C0C0C0 0%, #F5F5F5 50%, #C0C0C0 100%)';
+      tempDiv.style.display = 'flex';
+      tempDiv.style.flexDirection = 'column';
+      tempDiv.style.alignItems = 'center';
+      tempDiv.style.justifyContent = 'center';
+      tempDiv.style.padding = '30px 20px';
+      tempDiv.innerHTML = `
+        <img src="/endless.webp" style="width: 120px; height: auto; margin-bottom: 20px; filter: brightness(0);" />
+        <img src="${qrDataUrl}" style="width: 220px; height: 220px; display: block; margin-bottom: 16px; filter: brightness(0);" />
+        <div style="font-family: Arial, sans-serif; font-size: 9px; color: #000000; opacity: 0.8; text-align: center; word-break: break-all; padding: 0 20px; line-height: 1.4;">${url}</div>
+      `;
+
+      document.body.appendChild(tempDiv);
+
+      const canvas = await html2canvas(tempDiv, {
+        width: 400,
+        height: 600,
+        backgroundColor: '#C0C0C0',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 5000
+      });
+
+      // Convert canvas to blob for better mobile compatibility
+      canvas.toBlob((blob: Blob | null) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          
+          // Create download link that works on both mobile and desktop
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${data.name || 'business-card'}-qr.png`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+
+      // Clean up
+      document.body.removeChild(tempDiv);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export card. Please try again.');
+    }
+  }, [data, id]);
 
   const saveContact = () => {
     if (!data) return;
@@ -594,6 +686,20 @@ function CardContent() {
             {saving ? 'Saving...' : isSaved ? 'Saved!' : 'Save to Profile'}
           </button>
         )}
+      </div>
+
+      <div className="mt-4 flex justify-center">
+        <button 
+          onClick={exportAsPNG}
+          className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7,10 12,15 17,10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export as PNG
+        </button>
       </div>
 
       {/* Footer */}

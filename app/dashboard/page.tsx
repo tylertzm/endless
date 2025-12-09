@@ -8,13 +8,6 @@ import Image from 'next/image';
 import AppHeader from '../components/AppHeader';
 const FluidBackground = dynamic(() => import('../FluidBackground'), { ssr: false });
 
-let qrCodePromise: Promise<typeof import('qrcode')> | null = null;
-
-const loadQRCode = () => {
-  if (!qrCodePromise) qrCodePromise = import('qrcode');
-  return qrCodePromise;
-};
-
 interface SocialLink {
   platform: string;
   handle: string;
@@ -62,22 +55,6 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [menuOpen]);
-
-  const exportQRCode = async () => {
-    try {
-      const QRCode = await loadQRCode();
-      const url = `${window.location.origin}/c/${card.id}`;
-      const canvas = document.createElement('canvas');
-      await QRCode.toCanvas(canvas, url, { width: 256 });
-      const link = document.createElement('a');
-      link.download = `${card.name || 'card'}-qr.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    } catch (error) {
-      console.error('Failed to export QR code:', error);
-      alert('Failed to export QR code');
-    }
-  };
 
   return (
     <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden hover:bg-white/15 transition-colors group cursor-pointer" onClick={onView}>
@@ -151,11 +128,11 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
                 onClick={(e) => {
                   e.stopPropagation();
                   setMenuOpen(false);
-                  exportQRCode();
+                  window.open(`/c/${card.id}?export=png`, '_blank');
                 }}
                 className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors text-sm"
               >
-                Export QR Code
+                Export Card
               </button>
               <button
                 onClick={(e) => {
@@ -306,17 +283,22 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {cards.map((card) => (
-                <CardThumbnail
-                  key={card.id}
-                  card={card}
-                  onView={() => router.push(`/c/${card.id}`)}
-                  onEdit={() => handleEditCard(card)}
-                  onDelete={() => handleDeleteCard(card.id)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="text-center mb-4">
+                <p className="text-white/70">Cards: {cards.length}/2</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {cards.map((card) => (
+                  <CardThumbnail
+                    key={card.id}
+                    card={card}
+                    onView={() => router.push(`/c/${card.id}`)}
+                    onEdit={() => handleEditCard(card)}
+                    onDelete={() => handleDeleteCard(card.id)}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
