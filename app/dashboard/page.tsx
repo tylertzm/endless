@@ -61,38 +61,24 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
       {/* Card Preview */}
       <div className="w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden border-b border-white/10 relative">
         {/* Miniature kosma-style card front */}
-        <div className="w-full h-full flex flex-col p-4" style={{
+        <div className="w-full h-full flex items-center justify-center" style={{
           background: 'linear-gradient(135deg, #050505 0%, #1F1F1F 50%, #888888 100%)',
           position: 'relative'
         }}>
-          {/* Company header */}
-          {card.company && (
-            <div className="text-sm font-semibold text-white/90 mb-2 text-center">
-              {card.company}
-            </div>
-          )}
-
           {/* Profile image/initial in center */}
-          <div className="flex-1 flex items-center justify-center">
-            {card.image_data || card.imageData ? (
-              <Image
-                src={card.image_data || card.imageData!}
-                alt="Profile"
-                width={64}
-                height={64}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-xl font-bold text-white">
-                {card.name ? card.name.charAt(0).toUpperCase() : "K"}
-              </span>
-            )}
-          </div>
-
-          {/* Name at bottom */}
-          <div className="text-sm font-bold text-white text-center">
-            {card.name}
-          </div>
+          {card.image_data || card.imageData ? (
+            <Image
+              src={card.image_data || card.imageData!}
+              alt="Profile"
+              width={64}
+              height={64}
+              className="w-16 h-16 rounded-full object-cover"
+            />
+          ) : (
+            <span className="text-xl font-bold text-white">
+              {card.name ? card.name.charAt(0).toUpperCase() : "K"}
+            </span>
+          )}
         </div>
 
         {/* Three dots menu button */}
@@ -257,7 +243,7 @@ export default function DashboardPage() {
                 }}
                 className="btn btn-primary"
               >
-                + Create New Card
+                + 
               </button>
             </div>
           </div>
@@ -266,6 +252,12 @@ export default function DashboardPage() {
           {cards.length === 0 ? (
             <div className="text-center py-20">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 max-w-md mx-auto">
+                <div className="mb-4">
+                  <div className="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-500/30 rounded-full px-4 py-2">
+                    <span className="text-sm font-medium text-orange-300">Cards Used</span>
+                    <span className="text-lg font-bold text-white">{cards.length}/2</span>
+                  </div>
+                </div>
                 <h2 className="text-2xl font-bold text-white mb-4">No cards yet</h2>
                 <p className="text-white/70 mb-6">Create your first business card to get started</p>
                 <button
