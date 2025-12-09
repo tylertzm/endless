@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, Suspense, useState, useRef } from 'react';
+import { useEffect, Suspense, useState, useRef, useCallback } from 'react';
 import Head from 'next/head';
 import { useParams } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
@@ -44,7 +44,7 @@ interface HistoryItem {
   timestamp: string;
 }
 
-function CardContent() {
+function CardContent({ autoExport }: { autoExport: boolean }) {
   const params = useParams();
   const id = params.id as string;
   const user = useUser();
@@ -85,6 +85,7 @@ function CardContent() {
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clickCountRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const autoExportTriggeredRef = useRef(false);
 
   useEffect(() => {
     if (data && params.id) {
@@ -106,9 +107,7 @@ function CardContent() {
     }
   }, [data, params.id]);
 
-  if (!data) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
-
-  const exportAsPNG = async () => {
+  const exportAsPNG = useCallback(async () => {
     if (!data) return;
 
     console.log('Starting QR code export...');
@@ -176,7 +175,18 @@ function CardContent() {
       console.error('Export failed:', error);
       alert('Failed to export card. Please try again.');
     }
-  };
+  }, [data, id]);
+
+  // Trigger auto-export once when requested via query param and data is ready
+  useEffect(() => {
+    if (autoExport && data && !autoExportTriggeredRef.current) {
+      autoExportTriggeredRef.current = true;
+      const t = setTimeout(() => {
+        exportAsPNG();
+      }, 250);
+      return () => clearTimeout(t);
+    }
+  }, [autoExport, data, exportAsPNG]);
 
   const saveContact = () => {
     if (!data) return;
@@ -704,10 +714,12 @@ function CardContent() {
   );
 }
 
-export default function CardViewer() {
+export default function CardViewer({ searchParams }: { searchParams: { export?: string } }) {
+  const exportParam = (searchParams?.export || '').toLowerCase();
+  const autoExport = exportParam === 'png';
   return (
     <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
-      <CardContent />
+      <CardContent autoExport={autoExport} />
     </Suspense>
   );
 }

@@ -130,13 +130,15 @@ body {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
-  background: rgba(0,0,0,0.6);
+  /* Solid, non-transparent background for reliable visibility */
+  background: rgba(0,0,0,0.95);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px;
   padding: 10px;
   min-width: 180px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 10000;
 }
 
