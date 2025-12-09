@@ -130,14 +130,14 @@ body {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
-  background: rgba(0,0,0,0.9);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px;
   padding: 10px;
   min-width: 180px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  backdrop-filter: blur(20px);
+  z-index: 9999;
 }
 
 .app-header__menu-name {
@@ -161,6 +161,24 @@ body {
 
 .menu-item:hover {
   background: rgba(255,255,255,0.08);
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 640px) {
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .menu-item {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .app-header__logo {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* Large input style */

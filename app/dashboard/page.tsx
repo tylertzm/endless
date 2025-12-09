@@ -74,21 +74,19 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete }: {
 
           {/* Profile image/initial in center */}
           <div className="flex-1 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/30">
-              {card.image_data || card.imageData ? (
-                <Image
-                  src={card.image_data || card.imageData!}
-                  alt="Profile"
-                  width={64}
-                  height={64}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                <span className="text-xl font-bold text-white">
-                  {card.name ? card.name.charAt(0).toUpperCase() : "K"}
-                </span>
-              )}
-            </div>
+            {card.image_data || card.imageData ? (
+              <Image
+                src={card.image_data || card.imageData!}
+                alt="Profile"
+                width={64}
+                height={64}
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-xl font-bold text-white">
+                {card.name ? card.name.charAt(0).toUpperCase() : "K"}
+              </span>
+            )}
           </div>
 
           {/* Name at bottom */}

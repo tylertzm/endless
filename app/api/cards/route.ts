@@ -47,6 +47,14 @@ export async function POST(request: NextRequest) {
     const finalUserId = userResult[0].id;
     console.log('API: Final user ID:', finalUserId);
 
+    // Check card count limit
+    const cardCount = await sql`
+      SELECT COUNT(*) as count FROM cards WHERE user_id = ${finalUserId}
+    `;
+    if (cardCount[0].count >= 2) {
+      return NextResponse.json({ error: 'Maximum 2 cards per user reached' }, { status: 400 });
+    }
+
     // Insert the card
     const imageData = body.imageData || null;
     console.log('API: Inserting card with data:', { name, title, company, phone, email, website, address, socials, imageData, style });

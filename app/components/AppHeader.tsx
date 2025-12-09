@@ -34,7 +34,7 @@ export default function AppHeader() {
             <img
               src="/endless.webp"
               alt="Endless"
-              className="w-16 h-16 object-contain"
+              className="w-12 h-12 object-contain"
             />
           </div>
         </div>
