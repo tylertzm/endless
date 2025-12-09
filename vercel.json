@@ -8,7 +8,6 @@
     }
   },
   "env": {
-    "PRISMA_GENERATE_DATAPROXY": "true",
-    "DATABASE_URL": "@database_url_pooled"
+    "PRISMA_GENERATE_DATAPROXY": "true"
   }
 }
