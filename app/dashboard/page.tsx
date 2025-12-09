@@ -241,8 +241,13 @@ export default function DashboardPage() {
   };
 
   const handleEditCard = (card: BusinessCard) => {
+    // Clear any existing creation flags
+    localStorage.removeItem('creating_new_card');
+    localStorage.removeItem('cardData');
+    localStorage.removeItem('cardStyle');
+    localStorage.removeItem('currentStep');
+    // Set the edit data
     localStorage.setItem('edit_card_data', JSON.stringify(card));
-    localStorage.setItem('creating_new_card', 'true'); // Mark as editing
     router.push('/create');
   };
 
