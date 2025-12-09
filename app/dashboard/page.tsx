@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import FluidBackground from '../FluidBackground';
+import AppHeader from '../components/AppHeader';
 
 interface SocialLink {
   platform: string;
@@ -210,7 +211,7 @@ export default function DashboardPage() {
   const handleEditCard = (card: BusinessCard) => {
     localStorage.setItem('edit_card_data', JSON.stringify(card));
     localStorage.setItem('creating_new_card', 'true'); // Mark as editing
-    router.push('/');
+    router.push('/create');
   };
 
   if (user === undefined || loading) {
@@ -227,6 +228,9 @@ export default function DashboardPage() {
   return (
     <div className="relative min-h-screen bg-black">
       <FluidBackground />
+      <div className="relative z-10">
+        <AppHeader />
+      </div>
       
       <div className="relative z-10 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -239,17 +243,18 @@ export default function DashboardPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => router.push('/profile')}
-                className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg transition-colors hover:bg-white/20"
+                className="btn btn-ghost"
               >
                 Profile
               </button>
               <button
                 onClick={() => {
                   // Mark that user is creating a new card
+                  localStorage.removeItem('edit_card_data');
                   localStorage.setItem('creating_new_card', 'true');
-                  router.push('/');
+                  router.push('/create');
                 }}
-                className="px-6 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black font-medium"
+                className="btn btn-primary"
               >
                 + Create New Card
               </button>
@@ -263,8 +268,12 @@ export default function DashboardPage() {
                 <h2 className="text-2xl font-bold text-white mb-4">No cards yet</h2>
                 <p className="text-white/70 mb-6">Create your first business card to get started</p>
                 <button
-                  onClick={() => router.push('/')}
-                  className="px-8 py-3 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black font-medium"
+                  onClick={() => {
+                    localStorage.removeItem('edit_card_data');
+                    localStorage.setItem('creating_new_card', 'true');
+                    router.push('/create');
+                  }}
+                  className="btn btn-primary"
                 >
                   Create Your First Card
                 </button>

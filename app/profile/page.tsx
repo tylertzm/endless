@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import FluidBackground from '../FluidBackground';
+import AppHeader from '../components/AppHeader';
 
 interface SocialLink {
   platform: string;
@@ -245,7 +246,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
     localStorage.setItem('edit_card_data', JSON.stringify(card));
     localStorage.setItem('creating_new_card', 'true'); // Mark as editing
     // Navigate to the main page
-    router.push('/');
+    router.push('/create');
   };
 
   const handleUnsaveCard = async (cardId: string) => {
@@ -276,18 +277,12 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
   return (
     <div className="relative min-h-screen bg-black">
       <FluidBackground />
+      <div className="relative z-10">
+        <AppHeader />
+      </div>
       
       <div className="relative z-10 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <button
-              onClick={() => router.push('/')}
-              className="px-3 py-1.5 text-sm bg-black border-2 border-white text-white rounded transition-colors hover:bg-white hover:text-black"
-            >
-              ×
-            </button>
-          </div>
 
           {/* Profile Section */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-6">
@@ -327,7 +322,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
                     <div className="flex gap-2">
                       <button
                         onClick={handleUpdateProfile}
-                        className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black"
+                        className="btn btn-primary"
                       >
                         Save
                       </button>
@@ -336,7 +331,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
                           setDisplayName(user.displayName || '');
                           setIsEditing(false);
                         }}
-                        className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black"
+                        className="btn btn-ghost"
                       >
                         Cancel
                       </button>
@@ -348,7 +343,7 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
                     <p className="text-white/70 mb-4">{user.primaryEmail}</p>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="px-4 py-2 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black"
+                      className="btn btn-ghost"
                     >
                       Edit Profile
                     </button>
@@ -389,8 +384,12 @@ const CardThumbnail = ({ card, onView, onEdit, onDelete, onUnsave, showUnsave = 
                 <div className="col-span-full text-center py-12 text-white/50">
                   <p className="mb-4">You haven&apos;t created any cards yet</p>
                   <button
-                    onClick={() => router.push('/')}
-                    className="px-6 py-3 bg-black border-2 border-white text-white rounded-lg transition-colors hover:bg-white hover:text-black"
+                    onClick={() => {
+                      localStorage.removeItem('edit_card_data');
+                      localStorage.setItem('creating_new_card', 'true');
+                      router.push('/create');
+                    }}
+                    className="btn btn-primary"
                   >
                     Create Your First Card
                   </button>
