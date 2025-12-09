@@ -1,9 +1,9 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, Suspense, useState, useRef, useCallback } from 'react';
+import { useEffect, Suspense, useState, useRef } from 'react';
 import Head from 'next/head';
-import { useSearchParams, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 
 let html2canvasPromise: Promise<typeof import('html2canvas')> | null = null;
@@ -46,7 +46,6 @@ interface HistoryItem {
 
 function CardContent() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const id = params.id as string;
   const user = useUser();
 
@@ -77,14 +76,6 @@ function CardContent() {
       fetchCard();
     }
   }, [id]);
-
-  // Auto export if param
-  useEffect(() => {
-    const exportParam = searchParams.get('export');
-    if (exportParam === 'png' && data) {
-      exportAsPNG();
-    }
-  }, [data, searchParams, exportAsPNG]);
 
   const [flipped, setFlipped] = useState(false);
   const [zoomed, setZoomed] = useState(false);
@@ -117,7 +108,7 @@ function CardContent() {
 
   if (!data) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
 
-  const exportAsPNG = useCallback(async () => {
+  const exportAsPNG = async () => {
     if (!data) return;
 
     console.log('Starting QR code export...');
@@ -185,7 +176,7 @@ function CardContent() {
       console.error('Export failed:', error);
       alert('Failed to export card. Please try again.');
     }
-  }, [data, id]);
+  };
 
   const saveContact = () => {
     if (!data) return;
